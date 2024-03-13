@@ -75,7 +75,7 @@ def draw_ball(angle):
     pygame.draw.circle(screen, WHITE, (int(x), int(y)), BALL_RADIUS)
 
 
-def display_info(balance, bet_type, bet_amount, last_bet_info):
+def display(balance, bet_type, bet_amount, last_bet_info):
     font = pygame.font.SysFont(None, 36)
     balance_text = font.render(f"Balance: ${balance}", True, WHITE)
     screen.blit(balance_text, (10, 10))
@@ -85,7 +85,7 @@ def display_info(balance, bet_type, bet_amount, last_bet_info):
     screen.blit(last_bet_surface, (SCREEN_WIDTH - 400, 650))
 
 
-def draw_buttons(mouse_pos):
+def buttons(mouse_pos):
     all_buttons = type_buttons + bet_buttons + [custom_bet_button]
     for button in all_buttons:
         color = LIGHT_GREY if button["rect"].collidepoint(mouse_pos) else DARK_GREY
@@ -95,7 +95,7 @@ def draw_buttons(mouse_pos):
         screen.blit(text_surf, text_rect)
 
 
-def check_button_click(mouse_pos):
+def check_click(mouse_pos):
     all_buttons = type_buttons + bet_buttons + [custom_bet_button]
     for button in all_buttons:
         if button["rect"].collidepoint(mouse_pos):
@@ -103,11 +103,6 @@ def check_button_click(mouse_pos):
     return None
 
 
-def calculate_landing_slot(angle):
-    degrees_per_slot = 360 / NUM_SLOTS
-    normalized_angle = math.degrees(angle) % 360
-    slot_number = int((normalized_angle / degrees_per_slot)) % NUM_SLOTS + 1
-    return slot_number
 
 
 def handle_custom_bet_input():
@@ -121,7 +116,7 @@ def handle_custom_bet_input():
 
 def roll_dice():
     # Simulate rolling a six-sided dice
-    return random.randint(1, 6)
+    return random.randint(1, 36)
 
 def main():
     global screen, clock
@@ -147,7 +142,7 @@ def main():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN and not spinning:
-                clicked_button = check_button_click(mouse_pos)
+                clicked_button = check_click(mouse_pos)
                 if clicked_button and "bet" in clicked_button:
                     # Update bet amount based on clicked button, if balance suffices
                     temp_bet_amount = clicked_button.get("bet", 0)
@@ -184,8 +179,7 @@ def main():
             angle += spin_speed
             spin_speed *= 0.99 + random.uniform(-0.002, 0.002)  # Slight variation in deceleration
             if spin_speed < 0.01:
-                # When the spinning stops, calculate result
-                final_slot = calculate_landing_slot(angle)
+                final_slot = roll_dice()
                 win_color = "RED" if final_slot % 2 == 0 else "BLACK"
                 if (bet_type == win_color.lower() and bet_type != "custom_bet") or (
                         bet_type == "custom_bet" and final_slot == target_slot):
@@ -199,8 +193,8 @@ def main():
                 spinning = False
                 time.sleep(1)
 
-        display_info(balance, bet_type if bet_type else "Place your bet", bet_amount, last_bet_info)
-        draw_buttons(mouse_pos)
+        display(balance, bet_type if bet_type else "Place your bet", bet_amount, last_bet_info)
+        buttons(mouse_pos)
 
         pygame.display.flip()
         clock.tick(60)
