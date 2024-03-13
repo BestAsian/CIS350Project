@@ -1,7 +1,7 @@
 import pygame
 import sys
-from button import Button  # Assuming you have a button class defined in button.py
-from coinflip import main as coin_flip_game  # Import the main function from coinflip.py
+from button import Button  
+from coinflip import main as coin_flip_game 
 from Connect4 import main as connect4_game
 
 pygame.init()
@@ -26,7 +26,7 @@ def main_menu():
         CONNECT4_BUTTON = Button(image=pygame.image.load("assets/Options Rect.png"), pos=(640, 250),
                              text_input="CONNECT4", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
         OPTIONS_BUTTON = Button(image=pygame.image.load("assets/Options Rect.png"), pos=(640, 400),
-                                text_input="OPTIONS", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+                                text_input="PROFILE", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
         COIN_FLIP_BUTTON = Button(image=pygame.image.load("assets/Coin Flip Rect.png"), pos=(640, 550),
                                   text_input="COIN FLIP", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
         QUIT_BUTTON = Button(image=pygame.image.load("assets/Quit Rect.png"), pos=(640, 700),
@@ -47,26 +47,26 @@ def main_menu():
                     connect4_game()
                     pass
                 elif OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    options()
+                    Profile()
                     pass
                 elif COIN_FLIP_BUTTON.checkForInput(MENU_MOUSE_POS):
                     pygame.display.set_caption("Coin Flip")
-                    coin_flip_game()  # Call the coin flip game function
+                    coin_flip_game()
                 elif QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                     pygame.quit()
                     sys.exit()
 
         pygame.display.update()
 
-def options():
-    pygame.display.set_caption("Options")
+def Profile():
+    pygame.display.set_caption("Profile")
     while True:
 
         OPTIONS_MOUSE_POS = pygame.mouse.get_pos()
 
         SCREEN.fill("white")
 
-        OPTIONS_TEXT = get_font(45).render("This is the OPTIONS screen.", True, "Black")
+        OPTIONS_TEXT = get_font(45).render("This is the PROFILE screen.", True, "Black")
         OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(640, 260))
         SCREEN.blit(OPTIONS_TEXT, OPTIONS_RECT)
 
@@ -85,7 +85,6 @@ def options():
                     pygame.display.set_caption("Menu")
                     main_menu()
         pygame.display.update()
-
 
 if __name__ == "__main__":
     main_menu()
