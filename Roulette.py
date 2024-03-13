@@ -49,6 +49,14 @@ custom_bet_button = {"rect": pygame.Rect(900, 580, 200, 60), "text": "Custom Bet
 # Button font
 button_font = pygame.font.SysFont("Arial", 24)
 
+ball_spinning = False
+ball_angle = 0
+ball_spin_speed = 0
+target_slot = None
+balance = INITIAL_BALANCE
+bet_amount = 0
+last_bet_info = ""
+
 def draw_wheel(angle):
     number_font = pygame.font.SysFont("Arial", 20)
     for i in range(1, NUM_SLOTS + 1):
@@ -70,9 +78,31 @@ def draw_wheel(angle):
 
 
 def draw_ball(angle):
+    global ball_spinning, ball_angle, ball_spin_speed, target_slot, balance, bet_amount, last_bet_info
     x = SCREEN_WIDTH // 2 + math.cos(angle) * (WHEEL_RADIUS - BALL_RADIUS * 3)
     y = SCREEN_HEIGHT // 2 + math.sin(angle) * (WHEEL_RADIUS - BALL_RADIUS * 3)
     pygame.draw.circle(screen, WHITE, (int(x), int(y)), BALL_RADIUS)
+
+    if ball_spinning:
+        # Apply spin to the ball
+        angle += ball_spin_speed
+        ball_spin_speed *= 0.99 + random.uniform(-0.002, 0.002)  # Slight variation in deceleration
+
+        if ball_spin_speed < 0.01:
+            # Stop spinning when the speed is negligible
+            ball_spinning = False
+
+            # Calculate the winning slot based on the final angle
+            final_slot = calculate_slot(angle)
+
+            # Update game state based on the winning slot
+            if final_slot == target_slot:
+                balance += bet_amount * 2  # Win condition
+                outcome_msg = "Win!"
+            else:
+                outcome_msg = "Lose!"
+            last_bet_info = f"Landed on: {final_slot}. {outcome_msg}"
+            time.sleep(1)
 
 
 def display(balance, bet_type, bet_amount, last_bet_info):
@@ -106,7 +136,7 @@ def check_click(mouse_pos):
 def calculate_slot(angle):
     degrees_per_slot = 360 / NUM_SLOTS
     normalized_angle = math.degrees(angle) % 360
-    slot_number = int((normalized_angle / degrees_per_slot)) % NUM_SLOTS + 1
+    slot_number = int((normalized_angle / degrees_per_slot)) + 1  # Adjusted formula
     return slot_number
 
 
@@ -119,25 +149,24 @@ def handle_custom_bet_input():
         print("Invalid input. Bet set to 0.")
         return 0
 
+
 def roll_dice():
     # Simulate rolling a six-sided dice
-    return random.randint(1, 36)
+    return random.randint(1, NUM_SLOTS)
+
 
 def main():
-    global screen, clock
-    balance = INITIAL_BALANCE
-    # user = UserProfile("Player1")  # Create a user profile instance
-    global drawn_numbers
-    last_drawn_number = None
-    game_over = False
-    winner = None
-    bet_type = None
-    bet_amount = 0  # Initialize bet_amount to 0
-    spinning = False
+    global ball_spinning, ball_angle, ball_spin_speed, target_slot, balance, bet_amount, last_bet_info, bet_type
+
     angle = 0
-    spin_speed = 0.2
+    ball_spinning = False
+    ball_angle = 0
+    ball_spin_speed = 0
     target_slot = None
+    balance = INITIAL_BALANCE
+    bet_amount = 0
     last_bet_info = ""
+    bet_type = None  # Define bet_type here
 
     running = True
     while running:
@@ -146,7 +175,7 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN and not spinning:
+            elif event.type == pygame.MOUSEBUTTONDOWN and not ball_spinning:
                 clicked_button = check_click(mouse_pos)
                 if clicked_button and "bet" in clicked_button:
                     # Update bet amount based on clicked button, if balance suffices
@@ -170,33 +199,35 @@ def main():
                         bet_type = clicked_button["type"]
                         last_bet_info = f"Betting ${bet_amount} on {bet_type}"
                         if bet_amount > 0:
-                            spinning = True
-                            spin_speed = 0.2
-                            target_slot = random.randint(1, NUM_SLOTS)
+                            ball_spin_speed = 0.2
+                            ball_spinning = True
+                            bet_amount = 0  # Reset bet amount after placing bet
                         else:
                             last_bet_info = "Select bet amount first!"
 
         screen.fill(BLACK)
-        draw_wheel(angle)
-        draw_ball(angle)
-
-        if spinning:
-            angle += spin_speed
-            spin_speed *= 0.99 + random.uniform(-0.002, 0.002)  # Slight variation in deceleration
-            if spin_speed < 0.01:
-                final_slot = calculate_slot(angle)
-                win_color = "RED" if final_slot % 2 == 0 else "BLACK"
-                if (bet_type == win_color.lower() and bet_type != "custom_bet") or (
-                        bet_type == "custom_bet" and final_slot == target_slot):
+        draw_wheel(angle)  # Wheel remains stationary
+        x = roll_dice()
+        if ball_spinning:
+            ball_angle += ball_spin_speed
+            ball_spin_speed *= 0.99 + random.uniform(-0.002, 0.002)  # Slight variation in deceleration
+            if ball_spin_speed < 0.01:
+                final_slot = calculate_slot(ball_angle)
+                if int(final_slot) % 2 == 0:
+                    win_color = "red"
+                else:
+                    win_color = "black"
+                if (bet_type.lower() == win_color.lower() and bet_type != "custom_bet") or (
+                        bet_type == "custom_bet" and final_slot == final_slot):
                     balance += bet_amount * 2  # Win condition
                     outcome_msg = "Win!"
                 else:
                     outcome_msg = "Lose!"
                 last_bet_info = f"Landed on: {final_slot} {win_color}. {outcome_msg}"
-                bet_type = None
-                bet_amount = 0
-                spinning = False
+                ball_spinning = False
                 time.sleep(1)
+
+        draw_ball(ball_angle)  # Draw the ball with its independent spinning
 
         display(balance, bet_type if bet_type else "Place your bet", bet_amount, last_bet_info)
         buttons(mouse_pos)
@@ -204,6 +235,6 @@ def main():
         pygame.display.flip()
         clock.tick(60)
 
-
 if __name__ == "__main__":
     main()
+
