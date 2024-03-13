@@ -96,9 +96,12 @@ def mark_number_if_drawn(pos, card, drawn, marked_positions):
             cell_x = start_x + col * cell_size
             cell_y = start_y + row * cell_size
             if cell_x <= x <= cell_x + cell_size and cell_y <= y <= cell_y + cell_size:
-                if card[row][col] in drawn and (row, col) not in marked_positions:
+                number = card[row][col]
+                if number in drawn and (row, col) not in marked_positions:
                     marked_positions.append((row, col))
-                    return  # Only mark one number per click
+                    return True  # Mark successful
+                else:
+                    return False  # Invalid mark
 
 
 def draw_probability(probability, needed_numbers):
@@ -146,13 +149,17 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 mouse_x, mouse_y = event.pos
                 if draw_button_rect and not draw_button_rect.collidepoint(mouse_x, mouse_y):
-                    mark_number_if_drawn((mouse_x, mouse_y), player_card, drawn_numbers, marked_positions_player)
+                    mark_successful = mark_number_if_drawn((mouse_x, mouse_y), player_card, [last_drawn_number], marked_positions_player)
+                    if mark_successful:
+                        # Check for win after marking
+                        if check_win(marked_positions_player):
+                            winner = "Player"
+                            game_over = True
                 if draw_button_rect and draw_button_rect.collidepoint(mouse_x, mouse_y) and NUMBERS_RANGE:
                     last_drawn_number = random.choice(NUMBERS_RANGE)
                     drawn_numbers.append(last_drawn_number)
                     NUMBERS_RANGE.remove(last_drawn_number)
-                    # Auto-mark for player and AI
-                    mark_number_if_drawn((mouse_x, mouse_y), player_card, drawn_numbers, marked_positions_player)
+                    # Auto-mark for AI
                     auto_mark_ai_boards(last_drawn_number)
                     # Check for win
                     if check_win(marked_positions_player):
