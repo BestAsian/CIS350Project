@@ -103,6 +103,11 @@ def check_click(mouse_pos):
     return None
 
 
+def calculate_slot(angle):
+    degrees_per_slot = 360 / NUM_SLOTS
+    normalized_angle = math.degrees(angle) % 360
+    slot_number = int((normalized_angle / degrees_per_slot)) % NUM_SLOTS + 1
+    return slot_number
 
 
 def handle_custom_bet_input():
@@ -147,8 +152,8 @@ def main():
                     # Update bet amount based on clicked button, if balance suffices
                     temp_bet_amount = clicked_button.get("bet", 0)
                     if balance - temp_bet_amount >= 0:
-                        bet_amount = temp_bet_amount
-                        balance -= bet_amount
+                        bet_amount += temp_bet_amount  # Increment bet amount instead of setting it directly
+                        balance -= temp_bet_amount
                         last_bet_info = f"Betting ${bet_amount}"
                     else:
                         last_bet_info = "Insufficient balance!"
@@ -179,7 +184,7 @@ def main():
             angle += spin_speed
             spin_speed *= 0.99 + random.uniform(-0.002, 0.002)  # Slight variation in deceleration
             if spin_speed < 0.01:
-                final_slot = roll_dice()
+                final_slot = calculate_slot(angle)
                 win_color = "RED" if final_slot % 2 == 0 else "BLACK"
                 if (bet_type == win_color.lower() and bet_type != "custom_bet") or (
                         bet_type == "custom_bet" and final_slot == target_slot):
