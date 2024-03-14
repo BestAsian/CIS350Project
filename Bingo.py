@@ -14,6 +14,11 @@ font = pygame.font.SysFont('Consolas', 24)
 large_font = pygame.font.SysFont('Consolas', 72, bold=True)
 x_font = pygame.font.SysFont('Consolas', 48, bold=True)
 
+
+def get_font(size):
+    return pygame.font.Font("assets/font.ttf", size)
+
+
 def generate_bingo_card():
     """Generates and returns a 5x5 Bingo card with random numbers."""
     card = []
@@ -25,6 +30,8 @@ def generate_bingo_card():
                 card.append([])
             card[row].append(number)
     return card
+
+
 # Bingo settings and variables
 
 BINGO_CARD_SIZE = 5
@@ -51,6 +58,8 @@ def draw_bingo_card(card, pos, highlighted_nums, marked_positions):
             if (row, col) in marked_positions:
                 x_surf = x_font.render('X', True, GOLD)
                 screen.blit(x_surf, (cell_rect.x + 5, cell_rect.y - 5))
+
+
 def draw_rules():
     """Displays the rules of Bingo below the user's card."""
     rules = [
@@ -64,6 +73,7 @@ def draw_rules():
     for i, rule in enumerate(rules):
         rule_surf = font.render(rule, True, WHITE)
         screen.blit(rule_surf, (20, start_y + i * 20))
+
 def auto_mark_ai_boards(drawn_number):
     """Automatically marks the drawn number on AI boards."""
     for ai_index, ai_card in enumerate(ai_cards):
@@ -71,6 +81,7 @@ def auto_mark_ai_boards(drawn_number):
             for col in range(BINGO_CARD_SIZE):
                 if ai_card[row][col] == drawn_number:
                     marked_positions_ai[ai_index].append((row, col))
+
 
 def draw_last_drawn_number(number):
     """Displays the last drawn number prominently on the screen."""
@@ -87,6 +98,7 @@ def calculate_needed_numbers_probability(card, drawn, range_):
     probability = needed_count / total_count if total_count > 0 else 0
     return probability, needed_numbers
 
+
 def mark_number_if_drawn(pos, card, drawn, marked_positions):
     x, y = pos
     start_x, start_y = 50, 50  # Adjust these values based on where your card starts
@@ -96,12 +108,9 @@ def mark_number_if_drawn(pos, card, drawn, marked_positions):
             cell_x = start_x + col * cell_size
             cell_y = start_y + row * cell_size
             if cell_x <= x <= cell_x + cell_size and cell_y <= y <= cell_y + cell_size:
-                number = card[row][col]
-                if number in drawn and (row, col) not in marked_positions:
+                if card[row][col] in drawn and (row, col) not in marked_positions:
                     marked_positions.append((row, col))
-                    return True  # Mark successful
-                else:
-                    return False  # Invalid mark
+                    return  # Only mark one number per click
 
 
 def draw_probability(probability, needed_numbers):
@@ -114,6 +123,7 @@ def draw_probability(probability, needed_numbers):
     needed_surf = font.render(needed_text, True, WHITE)
     screen.blit(needed_surf, (20, SCREEN_HEIGHT - 40))
 
+
 def draw_button(text, position, size=(180, 40), color=GREEN):
     """Draws a button and returns its Rect."""
     button_rect = pygame.Rect(position, size)
@@ -123,17 +133,19 @@ def draw_button(text, position, size=(180, 40), color=GREEN):
     screen.blit(text_surf, text_rect)
     return button_rect
 
+
 def check_win(marked_positions):
     """Checks for a win given marked positions on a card."""
     # Check rows, columns, and diagonals for a complete set of marks
     for line in range(BINGO_CARD_SIZE):
         if all((line, col) in marked_positions for col in range(BINGO_CARD_SIZE)) or \
-           all((row, line) in marked_positions for row in range(BINGO_CARD_SIZE)):
+                all((row, line) in marked_positions for row in range(BINGO_CARD_SIZE)):
             return True
     if all((i, i) in marked_positions for i in range(BINGO_CARD_SIZE)) or \
-       all((i, BINGO_CARD_SIZE-1-i) in marked_positions for i in range(BINGO_CARD_SIZE)):
+            all((i, BINGO_CARD_SIZE - 1 - i) in marked_positions for i in range(BINGO_CARD_SIZE)):
         return True
     return False
+
 
 def main():
     global NUMBERS_RANGE, drawn_numbers
@@ -148,18 +160,16 @@ def main():
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 mouse_x, mouse_y = event.pos
+                if exit_button_rect.collidepoint(event.pos):
+                    return
                 if draw_button_rect and not draw_button_rect.collidepoint(mouse_x, mouse_y):
-                    mark_successful = mark_number_if_drawn((mouse_x, mouse_y), player_card, [last_drawn_number], marked_positions_player)
-                    if mark_successful:
-                        # Check for win after marking
-                        if check_win(marked_positions_player):
-                            winner = "Player"
-                            game_over = True
+                    mark_number_if_drawn((mouse_x, mouse_y), player_card, drawn_numbers, marked_positions_player)
                 if draw_button_rect and draw_button_rect.collidepoint(mouse_x, mouse_y) and NUMBERS_RANGE:
                     last_drawn_number = random.choice(NUMBERS_RANGE)
                     drawn_numbers.append(last_drawn_number)
                     NUMBERS_RANGE.remove(last_drawn_number)
-                    # Auto-mark for AI
+                    # Auto-mark for player and AI
+                    mark_number_if_drawn((mouse_x, mouse_y), player_card, drawn_numbers, marked_positions_player)
                     auto_mark_ai_boards(last_drawn_number)
                     # Check for win
                     if check_win(marked_positions_player):
@@ -176,13 +186,17 @@ def main():
             draw_bingo_card(ai_card, (400 + ai_index * 300, 50), drawn_numbers, marked_positions_ai[ai_index])
         draw_last_drawn_number(last_drawn_number)
         draw_button_rect = draw_button("Draw Number", (SCREEN_WIDTH // 2 - 60, 550))
+        exit_button_rect = draw_button("Exit", (SCREEN_WIDTH - 200, 550))
         draw_rules()  # Display Bingo rules below the user's card
 
         if game_over:
             winner_text = large_font.render(f"{winner} wins!", True, GOLD)
             screen.blit(winner_text, (SCREEN_WIDTH // 2 - winner_text.get_width() // 2, SCREEN_HEIGHT // 2))
+            pygame.time.wait(3000)
+            return
 
         pygame.display.flip()
+
 
 if __name__ == '__main__':
     main()
