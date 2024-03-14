@@ -55,7 +55,7 @@ def draw_board(board, screen):
         for r in range(ROW_COUNT):
             pygame.draw.rect(screen, BLUE, (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
             pygame.draw.circle(screen, BLACK, (
-                int(c * SQUARESIZE + SQUARESIZE / 2), int(r * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2) + 20), RADIUS)
+                int(c * SQUARESIZE + SQUARESIZE / 2), int(r * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2)), RADIUS)
 
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
@@ -67,21 +67,24 @@ def draw_board(board, screen):
                     int(c * SQUARESIZE + SQUARESIZE / 2), height - int(r * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
     pygame.display.update()
 
+
 # Constants
 EMPTY = 0
 PLAYER1 = 1
 PLAYER2 = 2
-ROW_COUNT = 6
-COLUMN_COUNT = 7
+ROW_COUNT = 7
+COLUMN_COUNT = 9
 SQUARESIZE = 100
 RADIUS = int(SQUARESIZE / 2 - 5)
 width = 1280
-height = 720
+height = 800
 size = (width, height)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
+# Fonts
+
 
 
 def main():
@@ -94,6 +97,7 @@ def main():
     game_over = False
     turn = 0
     while not game_over:
+        print(board)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -120,9 +124,22 @@ def main():
                         pygame.display.update()
 
                         if winning_move(board, PLAYER1):
-                            label = myfont.render("Player 1 wins!!", 1, RED)
+                            label = myfont.render("Player 1 wins!", 1, RED)
                             screen.blit(label, (40, 10))
                             game_over = True
+                        # If Tie
+                        checkfull = False
+                        for x in board:
+                            if 0 not in x:
+                                checkfull = True
+                            if 0 in x:
+                                checkfull = False
+                        if checkfull:
+                            label = myfont.render("Tie!", 1, (0, 255, 0))
+                            screen.blit(label, (40, 10))
+                            game_over = True
+
+
 
                 # # Ask for Player 2 Input
                 else:
@@ -135,11 +152,25 @@ def main():
                         pygame.display.update()
 
                         if winning_move(board, PLAYER2):
-                            label = myfont.render("Player 2 wins!!", 1, YELLOW)
+                            label = myfont.render("Player 2 wins!", 1, YELLOW)
+                            screen.blit(label, (40, 10))
+                            game_over = True
+                        checkfull = False
+                        for x in board:
+                            if 0 not in x:
+                                checkfull = True
+                            if 0 in x:
+                                checkfull = False
+                        if checkfull:
+                            label = myfont.render("Tie!", 1, (0, 255, 0))
                             screen.blit(label, (40, 10))
                             game_over = True
 
+
                 draw_board(board, screen)
+                pygame.draw.rect(screen, (128, 128, 128), (1100, 50, 100, 50))
+                back_text = myfont.render("Back", True, BLACK)
+                screen.blit(back_text, (1110, 60))
                 pygame.display.update()  # Update the display here
 
                 turn += 1
