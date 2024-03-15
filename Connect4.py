@@ -24,29 +24,37 @@ def winning_move(board, piece):
     # Check horizontal locations
     for c in range(COLUMN_COUNT - 3):
         for r in range(ROW_COUNT):
-            if board[r][c] == piece and board[r][c + 1] == piece and board[r][c + 2] == piece and board[r][
-                c + 3] == piece:
+            if (board[r][c] == piece
+                    and board[r][c + 1] == piece
+                    and board[r][c + 2] == piece
+                    and board[r][c + 3] == piece):
                 return True
 
     # Check vertical locations
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT - 3):
-            if board[r][c] == piece and board[r + 1][c] == piece and board[r + 2][c] == piece and board[r + 3][
-                c] == piece:
+            if (board[r][c] == piece
+                    and board[r + 1][c] == piece
+                    and board[r + 2][c] == piece
+                    and board[r + 3][c] == piece):
                 return True
 
     # Check positively sloped diagonals
     for c in range(COLUMN_COUNT - 3):
         for r in range(ROW_COUNT - 3):
-            if board[r][c] == piece and board[r + 1][c + 1] == piece and board[r + 2][c + 2] == piece and board[r + 3][
-                c + 3] == piece:
+            if (board[r][c] == piece
+                    and board[r + 1][c + 1] == piece
+                    and board[r + 2][c + 2] == piece
+                    and board[r + 3][c + 3] == piece):
                 return True
 
     # Check negatively sloped diagonals
     for c in range(COLUMN_COUNT - 3):
         for r in range(3, ROW_COUNT):
-            if board[r][c] == piece and board[r - 1][c + 1] == piece and board[r - 2][c + 2] == piece and board[r - 3][
-                c + 3] == piece:
+            if (board[r][c] == piece
+                    and board[r - 1][c + 1] == piece
+                    and board[r - 2][c + 2] == piece
+                    and board[r - 3][c + 3] == piece):
                 return True
 
 
@@ -68,6 +76,17 @@ def draw_board(board, screen):
     pygame.display.update()
 
 
+def check_draw(board, screen, myfont):
+    checkfull = False
+    for x in board:
+        if 0 not in x:
+            checkfull = True
+        if 0 in x:
+            checkfull = False
+    return checkfull
+
+
+
 # Constants
 EMPTY = 0
 PLAYER1 = 1
@@ -83,8 +102,9 @@ BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
-# Fonts
 
+
+# Fonts
 
 
 def main():
@@ -97,12 +117,12 @@ def main():
     game_over = False
     turn = 0
     while not game_over:
-        print(board)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-
-            if event.type == pygame.MOUSEMOTION:
+            elif event.type == pygame.K_ESCAPE:
+                game_over = True
+            elif event.type == pygame.MOUSEMOTION:
                 pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
                 posx = event.pos[0]
                 if turn == 0:
@@ -111,7 +131,7 @@ def main():
                     pygame.draw.circle(screen, YELLOW, (posx, int(SQUARESIZE / 2)), RADIUS)
                 pygame.display.update()  # Update the display here
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
                 # Ask for Player 1 Input
                 if turn == 0:
@@ -122,26 +142,18 @@ def main():
                         row = get_next_open_row(board, col)
                         drop_piece(board, row, col, PLAYER1)
                         pygame.display.update()
-
+                        # If Player 2 win
                         if winning_move(board, PLAYER1):
                             label = myfont.render("Player 1 wins!", 1, RED)
                             screen.blit(label, (40, 10))
                             game_over = True
                         # If Tie
-                        checkfull = False
-                        for x in board:
-                            if 0 not in x:
-                                checkfull = True
-                            if 0 in x:
-                                checkfull = False
-                        if checkfull:
+                        if check_draw(board, screen, myfont):
                             label = myfont.render("Tie!", 1, (0, 255, 0))
                             screen.blit(label, (40, 10))
                             game_over = True
 
-
-
-                # # Ask for Player 2 Input
+                # Ask for Player 2 Input
                 else:
                     posx = event.pos[0]
                     col = int(posx // SQUARESIZE)
@@ -150,22 +162,16 @@ def main():
                         row = get_next_open_row(board, col)
                         drop_piece(board, row, col, PLAYER2)
                         pygame.display.update()
-
+                        # If Player 2 win
                         if winning_move(board, PLAYER2):
                             label = myfont.render("Player 2 wins!", 1, YELLOW)
                             screen.blit(label, (40, 10))
                             game_over = True
-                        checkfull = False
-                        for x in board:
-                            if 0 not in x:
-                                checkfull = True
-                            if 0 in x:
-                                checkfull = False
-                        if checkfull:
+                        # If Tie
+                        if check_draw(board, screen, myfont):
                             label = myfont.render("Tie!", 1, (0, 255, 0))
                             screen.blit(label, (40, 10))
                             game_over = True
-
 
                 draw_board(board, screen)
                 pygame.draw.rect(screen, (128, 128, 128), (1100, 50, 100, 50))
