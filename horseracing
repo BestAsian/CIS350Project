@@ -30,9 +30,9 @@ player_horse = None
 
 
 # Function to update the balance based on the outcome
-def update_balance(outcome, bet_amount, balance, win):
-    if win:
-        return balance + bet_amount
+def update_balance(winhorse, bet_amount, balance, horse):
+    if horse == winhorse:
+        return balance + bet_amount * 2
     else:
         return balance - bet_amount
 
@@ -46,7 +46,7 @@ def display_result(winning_horse, player_horse, bet_amount, balance):
     if player_horse == winning_horse:
         outcome_text = FONT.render(f"Congratulations! You won {bet_amount}!", True, GREEN)
     else:
-        outcome_text = FONT.render("Sorry, you lost.", True, (255,0,0))
+        outcome_text = FONT.render("Sorry, you lost.", True, (255, 0, 0))
 
     WIN.blit(outcome_text, (WIDTH // 2 - outcome_text.get_width() // 2, HEIGHT // 2 + 50))
 
@@ -106,8 +106,8 @@ def main():
                           pos=(1150, 575), text_input=f"CLEAR", font=FONT,
                           base_color=BLACK, hovering_color="yellow")
         RACE = Button(image=pygame.image.load("assets/Play Rect.png"),
-                          pos=(1150, 675), text_input=f"RACE!", font=FONT,
-                          base_color=BLACK, hovering_color="green")
+                      pos=(1150, 675), text_input=f"RACE!", font=FONT,
+                      base_color=BLACK, hovering_color="green")
         BET1 = Button(image=pygame.image.load("assets/Play Rect.png"),
                       pos=(400, 575), text_input=f"BET 1", font=FONT,
                       base_color=BLACK, hovering_color="orange")
@@ -127,8 +127,8 @@ def main():
                          pos=(900, 675), text_input=f"BET 1000", font=FONT,
                          base_color=BLACK, hovering_color="orange")
         BACK = Button(image=pygame.image.load("assets/Play Rect.png"),
-                         pos=(1150, 50), text_input=f"BACK", font=FONT,
-                         base_color=BLACK, hovering_color="red")
+                      pos=(1150, 50), text_input=f"BACK", font=FONT,
+                      base_color=BLACK, hovering_color="red")
         for button in [HORSE_1, HORSE_2, HORSE_3, HORSE_4,
                        HORSE_5, HORSE_6, HORSE_7, CLEARBET,
                        BET1, BET5, BET10, BET50, BET100,
@@ -183,7 +183,6 @@ def main():
                             time.sleep(3)
                 elif BACK.checkForInput([mouse_x, mouse_y]):
                     return
-
 
         pygame.display.update()
         mainClock.tick(60)
