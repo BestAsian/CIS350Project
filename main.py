@@ -7,10 +7,12 @@ from Roulette import main as roulette_game
 from Bingo import main as bingo_game
 from Blackjack import main as blackjack_game
 # from Slots import main as slots_game
+# from Poker import main as poker_game
+from Horseracing import main as horse_game
 
 # Initialize pygame, sets the screen size, screen caption, and background image.
 pygame.init()
-SCREEN = pygame.display.set_mode((1280, 720))
+SCREEN = pygame.display.set_mode((1280, 800))
 pygame.display.set_caption("Menu")
 BG = pygame.image.load("assets/Background.png")
 
@@ -32,26 +34,32 @@ def main_menu():
         MENU_MOUSE_POS = pygame.mouse.get_pos()
         # Sets the main menu title.
         MENU_TEXT = get_font(75).render("CASINO MAIN MENU", True, "#b68f40")
-        MENU_RECT = MENU_TEXT.get_rect(center=(640, 100))
+        MENU_RECT = MENU_TEXT.get_rect(center=(640, 80))
         # Initializing the buttons leading to games and options.
-        CONNECT4_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(320, 250),
+        CONNECT4_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(320, 200),
                                  text_input="CONNECT4", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
         PROFILE_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(960, 700),
                                 text_input="PROFILE", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
-        COIN_FLIP_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(320, 400),
+        COIN_FLIP_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(320, 325),
                                   text_input="COIN FLIP", font=get_font(30), base_color="#d7fcd4",
                                   hovering_color="White")
         QUIT_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(320, 700),
                              text_input="QUIT", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
-        ROULETTE_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(960, 250),
+        ROULETTE_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(960, 200),
                                  text_input="ROULETTE", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
-        BINGO_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(960, 400),
+        BINGO_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(960, 325),
                               text_input="BINGO", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
-        BLACKJACK_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(960, 550),
+        BLACKJACK_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(960, 450),
                               text_input="BLACKJACK", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
-        SLOTS_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(320, 550),
+        SLOTS_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(320, 450),
                                   text_input="SLOTS", font=get_font(30), base_color="#d7fcd4",
                                   hovering_color="White")
+        POKER_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(320, 575),
+                              text_input="POKER", font=get_font(30), base_color="#d7fcd4",
+                              hovering_color="White")
+        HORSE_BUTTON = Button(image=pygame.image.load("assets/Standard Rect.png"), pos=(960, 575),
+                              text_input="HORSE RACING", font=get_font(30), base_color="#d7fcd4",
+                              hovering_color="White")
 
         # Loads the Main menu text
         SCREEN.blit(MENU_TEXT, MENU_RECT)
@@ -60,7 +68,8 @@ def main_menu():
         for button in [CONNECT4_BUTTON, PROFILE_BUTTON,
                        COIN_FLIP_BUTTON, QUIT_BUTTON,
                        ROULETTE_BUTTON, BINGO_BUTTON,
-                       BLACKJACK_BUTTON, SLOTS_BUTTON]:
+                       BLACKJACK_BUTTON, SLOTS_BUTTON,
+                       POKER_BUTTON, HORSE_BUTTON]:
             button.changeColor(MENU_MOUSE_POS)
             button.update(SCREEN)
 
@@ -87,12 +96,20 @@ def main_menu():
                 elif BLACKJACK_BUTTON.checkForInput(MENU_MOUSE_POS):
                     pygame.display.set_caption("BLACKJACK")
                     blackjack_game()
-                elif BLACKJACK_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    pygame.display.set_caption("BLACKJACK")
+                elif SLOTS_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    pygame.display.set_caption("SLOTS")
                     # slots_game()
+                elif HORSE_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    pygame.display.set_caption("HORSE RACING")
+                    horse_game()
+                elif POKER_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    pygame.display.set_caption("POKER")
+                    #poker_game()
                 elif QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                     pygame.quit()
                     sys.exit()
+
+
 
         pygame.display.update()
 
