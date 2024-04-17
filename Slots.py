@@ -202,43 +202,44 @@ pygame.draw.line(screen, (0, 0, 0), (LEVER_X + LEVER_WIDTH // 2, LEVER_Y),
 pygame.display.flip()
 
 # Main game running
-running = True
-lever_pulled = False
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if LEVER_RECT.collidepoint(event.pos):
-                lever_pulled = True
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if lever_pulled:
-                handle_lever_pull()
-                lever_pulled = False
-
-    # Randomly select 3 items
-    if lever_pulled:
-        if games_played < 5:
-            selected_items = random.sample(item_files, 3)
-            games_played += 1
-        else:
-            selected_items = ['7slotmachine.png', '7slotmachine.png', '7slotmachine.png']
-        lever_pulled = False
-
-    # Display the 3 random items
-    screen.fill((255, 255, 255))
-    for i, item_file in enumerate(selected_items):
-        image = pygame.image.load(item_file)
-        image = pygame.transform.scale(image, (SLOT_WIDTH, SLOT_HEIGHT))
-        screen.blit(image, (SLOTS_X + (SLOT_WIDTH + SLOT_SPACING) * i, SLOTS_Y))
-
-    # Draw lever
-    pygame.draw.rect(screen, LEVER_COLOR, LEVER_RECT)
-    pygame.draw.line(screen, (0, 0, 0), (LEVER_X + LEVER_WIDTH // 2, LEVER_Y),
-                     (LEVER_X + LEVER_WIDTH // 2, LEVER_Y + LEVER_HEIGHT), 4)
-
-    pygame.display.flip()
-
-# Quit Pygame
-pygame.quit()
-
+def main():
+    running = True
+    lever_pulled = False
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if LEVER_RECT.collidepoint(event.pos):
+                    lever_pulled = True
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if lever_pulled:
+                    handle_lever_pull()
+                    lever_pulled = False
+    
+        # Randomly select 3 items
+        if lever_pulled:
+            if games_played < 5:
+                selected_items = random.sample(item_files, 3)
+                games_played += 1
+            else:
+                selected_items = ['7slotmachine.png', '7slotmachine.png', '7slotmachine.png']
+            lever_pulled = False
+    
+        # Display the 3 random items
+        screen.fill((255, 255, 255))
+        for i, item_file in enumerate(selected_items):
+            image = pygame.image.load(item_file)
+            image = pygame.transform.scale(image, (SLOT_WIDTH, SLOT_HEIGHT))
+            screen.blit(image, (SLOTS_X + (SLOT_WIDTH + SLOT_SPACING) * i, SLOTS_Y))
+    
+        # Draw lever
+        pygame.draw.rect(screen, LEVER_COLOR, LEVER_RECT)
+        pygame.draw.line(screen, (0, 0, 0), (LEVER_X + LEVER_WIDTH // 2, LEVER_Y),
+                         (LEVER_X + LEVER_WIDTH // 2, LEVER_Y + LEVER_HEIGHT), 4)
+    
+        pygame.display.flip()
+    
+    # Quit Pygame
+    pygame.quit()
+    
