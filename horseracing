@@ -1,0 +1,193 @@
+import pygame
+import random
+from button import Button
+import time
+
+# Initialize Pygame
+pygame.init()
+
+# Set up display
+BG = pygame.image.load("assets/Background.png")
+WIDTH, HEIGHT = 1280, 720
+WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Horse Racing Game")
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+GRAY = (128, 128, 128)
+
+mainClock = pygame.time.Clock()
+
+# Fonts
+FONT = pygame.font.SysFont(None, 50)
+
+# Game variables
+num_horses = 7
+winning_horse = None
+player_horse = None
+
+
+# Function to update the balance based on the outcome
+def update_balance(outcome, bet_amount, balance, win):
+    if win:
+        return balance + bet_amount
+    else:
+        return balance - bet_amount
+
+
+# Function to display the result of the race
+def display_result(winning_horse, player_horse, bet_amount, balance):
+    WIN.blit(BG, (0, 0))
+    result_text = FONT.render(f"Winning Horse: {winning_horse}", True, BLACK)
+    WIN.blit(result_text, (WIDTH // 2 - result_text.get_width() // 2, HEIGHT // 2 - 50))
+
+    if player_horse == winning_horse:
+        outcome_text = FONT.render(f"Congratulations! You won {bet_amount}!", True, GREEN)
+    else:
+        outcome_text = FONT.render("Sorry, you lost.", True, (255,0,0))
+
+    WIN.blit(outcome_text, (WIDTH // 2 - outcome_text.get_width() // 2, HEIGHT // 2 + 50))
+
+    balance_text = FONT.render(f"Balance: {balance}", True, BLACK)
+    WIN.blit(balance_text, (10, 10))
+
+    pygame.display.update()
+
+
+# Check if the bet amount is valid
+def is_valid_bet(amount, balance):
+    if amount <= balance:
+        return True
+    else:
+        return False
+
+
+# Main function to play the game
+def main():
+    balance = 1000
+    current_bet = 0
+    player_horse = None
+
+    run = True
+    while run:
+        WIN.blit(BG, (0, 0))
+        balance_text = FONT.render(f"Balance: {balance}", True, BLACK)
+        WIN.blit(balance_text, (10, 5))
+        currhorse_text = FONT.render(f"Horse#: {player_horse}", True, BLACK)
+        WIN.blit(currhorse_text, (450, 5))
+        currbet_text = FONT.render(f"Bet: {current_bet}", True, BLACK)
+        WIN.blit(currbet_text, (700, 5))
+        invalidbet_text = FONT.render(f"{current_bet} is greater than your balance.", True, (255, 0, 0))
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        HORSE_1 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                         pos=(150, 75), text_input=f"Horse 1", font=FONT,
+                         base_color=BLACK, hovering_color="red")
+        HORSE_2 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                         pos=(150, 175), text_input=f"Horse 2", font=FONT,
+                         base_color=BLACK, hovering_color="orange")
+        HORSE_3 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                         pos=(150, 275), text_input=f"Horse 3", font=FONT,
+                         base_color=BLACK, hovering_color="yellow")
+        HORSE_4 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                         pos=(150, 375), text_input=f"Horse 4", font=FONT,
+                         base_color=BLACK, hovering_color="green")
+        HORSE_5 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                         pos=(150, 475), text_input=f"Horse 5", font=FONT,
+                         base_color=BLACK, hovering_color="blue")
+        HORSE_6 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                         pos=(150, 575), text_input=f"Horse 6", font=FONT,
+                         base_color=BLACK, hovering_color="indigo")
+        HORSE_7 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                         pos=(150, 675), text_input=f"Horse 7", font=FONT,
+                         base_color=BLACK, hovering_color="violet")
+        CLEARBET = Button(image=pygame.image.load("assets/Play Rect.png"),
+                          pos=(1150, 575), text_input=f"CLEAR", font=FONT,
+                          base_color=BLACK, hovering_color="yellow")
+        RACE = Button(image=pygame.image.load("assets/Play Rect.png"),
+                          pos=(1150, 675), text_input=f"RACE!", font=FONT,
+                          base_color=BLACK, hovering_color="green")
+        BET1 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                      pos=(400, 575), text_input=f"BET 1", font=FONT,
+                      base_color=BLACK, hovering_color="orange")
+        BET5 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                      pos=(650, 575), text_input=f"BET 5", font=FONT,
+                      base_color=BLACK, hovering_color="orange")
+        BET10 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                       pos=(900, 575), text_input=f"BET 10", font=FONT,
+                       base_color=BLACK, hovering_color="orange")
+        BET50 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                       pos=(400, 675), text_input=f"BET 50", font=FONT,
+                       base_color=BLACK, hovering_color="orange")
+        BET100 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                        pos=(650, 675), text_input=f"BET 100", font=FONT,
+                        base_color=BLACK, hovering_color="orange")
+        BET1000 = Button(image=pygame.image.load("assets/Play Rect.png"),
+                         pos=(900, 675), text_input=f"BET 1000", font=FONT,
+                         base_color=BLACK, hovering_color="orange")
+        BACK = Button(image=pygame.image.load("assets/Play Rect.png"),
+                         pos=(1150, 50), text_input=f"BACK", font=FONT,
+                         base_color=BLACK, hovering_color="red")
+        for button in [HORSE_1, HORSE_2, HORSE_3, HORSE_4,
+                       HORSE_5, HORSE_6, HORSE_7, CLEARBET,
+                       BET1, BET5, BET10, BET50, BET100,
+                       BET1000, RACE, BACK]:
+            button.changeColor([mouse_x, mouse_y])
+            button.update(WIN)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if HORSE_1.checkForInput([mouse_x, mouse_y]):
+                    player_horse = 1
+                elif HORSE_2.checkForInput([mouse_x, mouse_y]):
+                    player_horse = 2
+                elif HORSE_3.checkForInput([mouse_x, mouse_y]):
+                    player_horse = 3
+                elif HORSE_4.checkForInput([mouse_x, mouse_y]):
+                    player_horse = 4
+                elif HORSE_5.checkForInput([mouse_x, mouse_y]):
+                    player_horse = 5
+                elif HORSE_6.checkForInput([mouse_x, mouse_y]):
+                    player_horse = 6
+                elif HORSE_7.checkForInput([mouse_x, mouse_y]):
+                    player_horse = 7
+                elif CLEARBET.checkForInput([mouse_x, mouse_y]):
+                    current_bet = 0
+                elif BET1.checkForInput([mouse_x, mouse_y]):
+                    current_bet += 1
+                elif BET5.checkForInput([mouse_x, mouse_y]):
+                    current_bet += 5
+                elif BET10.checkForInput([mouse_x, mouse_y]):
+                    current_bet += 10
+                elif BET100.checkForInput([mouse_x, mouse_y]):
+                    current_bet += 100
+                elif BET50.checkForInput([mouse_x, mouse_y]):
+                    current_bet += 50
+                elif BET1000.checkForInput([mouse_x, mouse_y]):
+                    current_bet += 1000
+                elif RACE.checkForInput([mouse_x, mouse_y]):
+                    if current_bet > 0:
+                        if not is_valid_bet(current_bet, balance):
+                            WIN.blit(invalidbet_text, (300, 500))
+                            pygame.display.update()
+                            time.sleep(2)
+                        else:
+                            winning_horse = random.randint(1, num_horses)
+                            balance = update_balance(winning_horse, current_bet, balance, player_horse)
+                            display_result(winning_horse, player_horse, current_bet, balance)
+                            current_bet = 0
+                            time.sleep(3)
+                elif BACK.checkForInput([mouse_x, mouse_y]):
+                    return
+
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+
+if __name__ == "__main__":
+    main()
