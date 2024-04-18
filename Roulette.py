@@ -1,386 +1,301 @@
 """
-This programs run Bingo using pygame with features such as betting, autoplay, 
-manual plays, versus AI, respectively. 
+This programs run Roulette game using pygame with features such as betting on colors, even/odd numbers, 
+lower and upper bounds, respectively. 
 Tri Tran
 04/18/2024
 Version: 3.11
 """
+
 import pygame
 import random
+import math
 import sys
+from button import Button
 
-# Initialize Pygame and the game screen
+# Initialize the game
 pygame.init()
-SCREEN_WIDTH, SCREEN_HEIGHT = 1200, 600
+
+# Display's Settings
+SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Bingo Game versus AI")
+pygame.display.set_caption("Roulette Game")
 
-# Define used colors and fonts
-BLACK = (0, 0, 0)
-RED = (139, 0, 0)
-WHITE = (255, 255, 255)
-GOLD = (255, 215, 0)
-GREEN = (0, 100, 0)
-font = pygame.font.SysFont('Consolas', 24)
-large_font = pygame.font.SysFont('Consolas', 72, bold=True)
-x_font = pygame.font.SysFont('Consolas', 48, bold=True)
+# FPS
+clock = pygame.time.Clock()
 
+# Colors
+WHITE, BLACK, RED, GREEN, LIGHT_GREY, DARK_GREY = ((255, 255, 255), (0, 0, 0),
+                                                   (255, 0, 0), (255, 255, 0),
+                                                   (200, 200, 200), (50, 50, 50))
 
-class Player:
-    def __init__(self, balance=100):
-        self.balance = balance  # Player's balances
-        self.bet = 0  # Player's bet
-        self.wins = 0  # Player's wins
-        self.losses = 0  # Player's losses
+# Wheel
+WHEEL_RADIUS, BALL_RADIUS, NUM_SLOTS = 300, 12, 37
 
-    def place_bet(self, amount):
-        if amount <= self.balance and amount > 0:
-            self.balance -= amount
-            self.bet += amount
-            return True
-        return False
+# Balance
+INITIAL_BALANCE = 1000
 
-    def win(self):
-        self.balance += self.bet * 2
-        self.bet = 0
-        self.wins += 1
+# Button's font
+button_font = pygame.font.SysFont("Arial", 24)
+popup_font = pygame.font.SysFont("Arial", 36)
 
-    def lose(self):
-        self.bet = 0
-        self.losses += 1
+# All Bet's button
+bet_buttons = [
+    {"rect": pygame.Rect(30, 300, 120, 60), "text": "Bet $5", "bet": 5},
+    {"rect": pygame.Rect(30, 380, 120, 60), "text": "Bet $10", "bet": 10},
+    {"rect": pygame.Rect(30, 460, 120, 60), "text": "Bet $100", "bet": 100},
+]
 
-    def reset_bet(self):
-        self.balance += self.bet
-        self.bet = 0
+type_buttons = [
+    {"rect": pygame.Rect(1000, 300, 120, 60), "text": "Red", "type": "red"},
+    {"rect": pygame.Rect(1150, 300, 120, 60), "text": "Black", "type": "black"},
+    {"rect": pygame.Rect(1000, 380, 120, 60), "text": "Odd", "type": "odd"},
+    {"rect": pygame.Rect(1150, 380, 120, 60), "text": "Even", "type": "even"},
+    {"rect": pygame.Rect(1000, 460, 120, 60), "text": "Low (1-18)", "type": "low"},
+    {"rect": pygame.Rect(1150, 460, 120, 60), "text": "High (19-36)", "type": "high"},
+]
 
-
-# Creating instances of the Player for the Bingo.
-player = Player(100)  # Starting the player with the balance of 100 dollars.
-ai_players = [Player(100) for _ in range(2)]  # Create two AI players.
+# Roulette's global variables
+ball_spinning, ball_angle, ball_spin_speed = False, 0, 0
+target_slot, balance = None, INITIAL_BALANCE
+bet_amount, last_bet_info, bet_type = 0, "", None
+show_popup, popup_text, wins, losses = False, "", 0, 0
+number_bet = None
 
 
-def get_font(size):
-    # Get font for the board
-    return pygame.font.Font("Ariel", size)
+def handle_number_input(events):
+    global number_bet  # Global variable
+
+    for event in events:
+        if event.type == pygame.KEYDOWN:  # Check if the key have been pressed
+            if event.unicode.isnumeric():  # Digit check
+                digit = int(event.unicode)  # Cast to int
+                if number_bet is None:  # Check if there's no number
+                    number_bet = digit  # New number
+                else:
+                    number_bet = number_bet * 10 + digit
+                if number_bet > 36:  # Check for a valid range
+                    number_bet = None  # Reset
+                return True
+
+            elif event.key == pygame.K_BACKSPACE:  # Keypress check
+                if number_bet is not None:  # Check if a number is there
+                    number_bet = number_bet // 10  # Remove the last digit
+                    if number_bet == 0:
+                        number_bet = None  # Clear the number
+                return True
+
+            elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):  # Keypress Checker
+                if number_bet is not None and 0 <= number_bet <= 36:  # Valid Range
+                    return True
+                else:  # Invalid Range
+                    number_bet = None  # Reset
+                    return False  # Invalid
+
+    return False  # No number entered
 
 
-def auto_mark_player_board(drawn_number, card, marked_positions):
-    # Player's card with randomized numbers
-    for row in range(BINGO_CARD_SIZE):
-        for col in range(BINGO_CARD_SIZE):
-            # Check the card for the drawn number
-            if card[row][col] == drawn_number:
-                marked_positions.append((row, col))
+def draw_wheel(angle):
+    # Font for the wheel's number
+    number_font = pygame.font.SysFont("Arial", 20)
+
+    # Borders around the wheel
+    border_color = RED
+    border_thickness = 5
+
+    # Draw the border
+    pygame.draw.circle(
+        screen, border_color,
+        (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2),
+        WHEEL_RADIUS + border_thickness, border_thickness
+    )
+
+    # draw each wheel slots
+    for i in range(NUM_SLOTS):
+        slot_angle_degrees = (360 / NUM_SLOTS) * i + angle
+        radian_angle = math.radians(slot_angle_degrees)
+
+        # Colors in each slots
+        color = GREEN if i == 0 else RED if i % 2 == 0 else BLACK
+
+        # Draw the points
+        segment_points = [
+            (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2),
+            (SCREEN_WIDTH // 2 + math.cos(radian_angle) * WHEEL_RADIUS,
+             SCREEN_HEIGHT // 2 + math.sin(radian_angle) * WHEEL_RADIUS),
+            (SCREEN_WIDTH // 2 + math.cos(radian_angle + math.radians(360 / NUM_SLOTS)) * WHEEL_RADIUS,
+             SCREEN_HEIGHT // 2 + math.sin(radian_angle + math.radians(360 / NUM_SLOTS)) * WHEEL_RADIUS)
+        ]
+        pygame.draw.polygon(screen, color, segment_points)
+
+        # Draw the number in
+        text_surface = number_font.render(str(i), True, WHITE if i != 0 else BLACK)
+        text_x = SCREEN_WIDTH // 2 + math.cos(radian_angle + math.radians(180 / NUM_SLOTS)) * (WHEEL_RADIUS - 50)
+        text_y = SCREEN_HEIGHT // 2 + math.sin(radian_angle + math.radians(180 / NUM_SLOTS)) * (WHEEL_RADIUS - 50)
+        text_rect = text_surface.get_rect(center=(text_x, text_y))
+        screen.blit(text_surface, text_rect)
 
 
-def draw_player_stats(balance, bet, wins, losses, position):
-    # Display player's game statistics
-    x, y = position
-    # Display the balance
-    screen.blit(font.render(f"Balance: ${balance}", True, WHITE), (x, y))
-    # Display the bet amount
-    screen.blit(font.render(f"Current Bet: ${bet}", True, WHITE), (x, y + 30))
-    # Display the number of wins
-    screen.blit(font.render(f"Wins: {wins}", True, WHITE), (x, y + 60))
-    # Display the number of losses
-    screen.blit(font.render(f"Losses: {losses}", True, WHITE), (x, y + 90))
+def draw_ball(angle):
+    # Ball
+    x = SCREEN_WIDTH // 2 + math.cos(angle) * (WHEEL_RADIUS - BALL_RADIUS * 3)
+    y = SCREEN_HEIGHT // 2 + math.sin(angle) * (WHEEL_RADIUS - BALL_RADIUS * 3)
+
+    # Draw the ball onto the wheel
+    pygame.draw.circle(screen, WHITE, (int(x), int(y)), BALL_RADIUS)
 
 
-def draw_ai_stats(ai_player, position):
-    # Display AI player's statistics
-    x, y = position
-    # Display the AI's number of wins
-    screen.blit(font.render(f"AI Wins: {ai_player.wins}", True, WHITE), (x, y + 30))
-    # Display the AI's number of losses
-    screen.blit(font.render(f"AI Losses: {ai_player.losses}", True, WHITE), (x, y + 60))
+def draw_popup(text):
+    # Screen pop-up
+    popup_rect = pygame.Rect(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 100, 400, 200)
+
+    # Draw the border
+    pygame.draw.rect(screen, LIGHT_GREY, popup_rect)
+    pygame.draw.rect(screen, BLACK, popup_rect, 3)
+
+    # Split the text into new lines
+    lines = text.split("\n")
+    for i, line in enumerate(lines):
+        text_surface = popup_font.render(line, True, BLACK)
+        text_rect = text_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50 + i * 50))
+        screen.blit(text_surface, text_rect)
 
 
-def autoplay_game():
-    # Track the game state
-    global drawn_numbers, NUMBERS_RANGE
-    last_drawn_number = None
-    game_over = False
-    winner = None
+def display_info(balance, bet_type, bet_amount, last_bet_info, wins, losses):
+    # Font setting
+    font = pygame.font.SysFont(None, 36)
 
-    # Continue the game until a win is detected
-    while not game_over:
-        # Randomly select a new number
-        last_drawn_number = random.choice(NUMBERS_RANGE)
-        drawn_numbers.append(last_drawn_number)
-        NUMBERS_RANGE.remove(last_drawn_number)
+    # Player's balance
+    balance_text = font.render(f"Balance: ${balance}", True, WHITE)
+    screen.blit(balance_text, (100, 20))
 
-        # Update player and AI cards with the new number
-        auto_mark_player_board(last_drawn_number, player_card, marked_positions_player)
+    # Bet information
+    bet_text = font.render(f"Bet on: {bet_type}, Amount: ${bet_amount}", True, WHITE)
+    screen.blit(bet_text, (100, 60))
 
-        # Determine the winner
-        if check_win(marked_positions_player):  # Player's win check
-            winner = "Player"
-            game_over = True
-        # Check each AI's win condition
-        for ai_index, marks in enumerate(marked_positions_ai):
-            if check_win(marks):
-                winner = f"AI {ai_index + 1}"
-                game_over = True
+    # Last bet information
+    last_bet_info_text = font.render(last_bet_info, True, WHITE)
+    screen.blit(last_bet_info_text, (SCREEN_WIDTH - 300, 680))
 
-        # Display
-        screen.fill(BLACK)  # Clear the screen
-        # Draw the player's and AI's bingo cards with the marked numbers
-        draw_bingo_card(player_card, (50, 50), drawn_numbers, marked_positions_player)
-        for ai_index, ai_card in enumerate(ai_cards):
-            draw_bingo_card(ai_card, (400 + ai_index * 300, 50), drawn_numbers, marked_positions_ai[ai_index])
-        # Show the last number that was drawn
-        draw_last_drawn_number(last_drawn_number)
-        pygame.display.flip()  # Update the screen with the new drawing
-        pygame.time.wait(500)
-
-    # Game is over, return a winner
-    return winner
+    # Win/loss record
+    win_lose_text = font.render(f"Wins: {wins} Losses: {losses}", True, WHITE)
+    screen.blit(win_lose_text, (100, 100))
 
 
-def endgame_screen(winner):
-    # The endgame message
-    screen.fill(BLACK)
-    # Display the winning message
-    winner_text = large_font.render(f"{winner} wins!", True, GOLD)
-    screen.blit(winner_text, (SCREEN_WIDTH // 2 - winner_text.get_width() // 2, SCREEN_HEIGHT // 2))
-    # Draw buttons for playing again or quit
-    replay_button = draw_button("Play Again", (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 100))
-    quit_button = draw_button("Quit", (SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT // 2 + 100))
-    pygame.display.flip()  # Display with the endgame screen
-
-    # Loop for the endgame screen
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:  # Exit
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:  # Check button clicks
-                mouse_x, mouse_y = event.pos
-                if replay_button.collidepoint((mouse_x, mouse_y)):
-                    return "replay"  # Return 'replay'
-                elif quit_button.collidepoint((mouse_x, mouse_y)):
-                    return "quit"  # Return 'quit'
+def handle_buttons(mouse_pos):
+    all_buttons = type_buttons + bet_buttons  # Combine type and bet buttons
+    for button in all_buttons:  # GO through all buttons
+        color = LIGHT_GREY if button["rect"].collidepoint(mouse_pos) else DARK_GREY
+        # Draw the button
+        pygame.draw.rect(screen, color, button["rect"])
+        text_surf = button_font.render(button["text"], True, WHITE)
+        text_rect = text_surf.get_rect(center=button["rect"].center)
+        screen.blit(text_surf, text_rect)
 
 
-def generate_bingo_card():
-    # Create a new Bingo card with random numbers
-    card = []
-    # Set up the for a  5x5 card
-    col_ranges = [(i * 15 + 1, (i + 1) * 15) for i in range(BINGO_CARD_SIZE)]
-    for col, (start, end) in enumerate(col_ranges):
-        # Sample random numbers for each column
-        numbers = random.sample(range(start, end + 1), BINGO_CARD_SIZE)
-        for row, number in enumerate(numbers):
-            if len(card) <= row:
-                card.append([])
-            # Append the number to the appropriate row
-            card[row].append(number)
-    # Return the completed card
-    return card
+def check_click(mouse_pos):
+    all_buttons = type_buttons + bet_buttons  # Combine type and bet buttons
+    for button in all_buttons:  # Go through all buttons
+        # Check the mouse click area
+        if button["rect"].collidepoint(mouse_pos):
+            return button  # Return the button clicked
+    return None  # Nothing was clicked
 
 
-# Bingo settings and variables
-BINGO_CARD_SIZE = 5
-NUMBERS_RANGE = list(range(1, 76))
-player_card = generate_bingo_card()
-ai_cards = [generate_bingo_card() for _ in range(2)]  # Two AI
-drawn_numbers = []
-marked_positions_player = []
-marked_positions_ai = [[], []]  # Tracking marks for AI
-
-
-def draw_bingo_card(card, pos, highlighted_nums, marked_positions):
-    # Start drawing the Bingo card
-    x, y = pos
-
-    # Go over each row and column of the Bingo card
-    for row in range(BINGO_CARD_SIZE):
-        for col in range(BINGO_CARD_SIZE):
-            cell_color = BLACK if (row + col) % 2 == 0 else RED
-            cell_rect = pygame.Rect(x + col * 50, y + row * 50, 50, 50)
-            # Draw the cell background
-            pygame.draw.rect(screen, cell_color, cell_rect)
-            # Draw the border
-            pygame.draw.rect(screen, GOLD, cell_rect, 2)
-            number = card[row][col]
-            # Display the number as text
-            text_surf = font.render(f'{number}', True, WHITE)
-            screen.blit(text_surf, (cell_rect.x + 15, cell_rect.y + 10))
-            # If the current position is marked, draw an 'X' over it
-            if (row, col) in marked_positions:
-                x_surf = x_font.render('X', True, GOLD)
-                screen.blit(x_surf, (cell_rect.x + 5, cell_rect.y - 5))
-
-
-def draw_player_stats(balance, bet, wins, losses, position):
-    # Displays the player's game statistics
-    x, y = position
-
-    screen.blit(font.render(f"Balance: ${balance}", True, WHITE), (x, y + 30))
-    screen.blit(font.render(f"Current Bet: ${bet}", True, WHITE), (x, y + 60))
-    screen.blit(font.render(f"Wins: {wins}", True, WHITE), (x, y + 90))
-    screen.blit(font.render(f"Losses: {losses}", True, WHITE), (x, y + 120))
-
-
-def auto_mark_ai_boards(drawn_number):
-    # Automatically mark the drawn number on AI's Bingo card.
-    for ai_index, ai_card in enumerate(ai_cards):
-        for row in range(BINGO_CARD_SIZE):
-            for col in range(BINGO_CARD_SIZE):
-                # If the drawn number is on the card MARK it.
-                if ai_card[row][col] == drawn_number:
-                    marked_positions_ai[ai_index].append((row, col))
-
-def draw_last_drawn_number(number):
-    # Display the last number drawn in the game.
-    if number:  # Make sure the number is valid.
-        number_surf = large_font.render(str(number), True, GOLD)
-        screen.blit(number_surf, (SCREEN_WIDTH - 150, SCREEN_HEIGHT / 2 - 50))
-
-
-def mark_number_if_drawn(pos, card, drawn, marked_positions):
-    # Mark a number on the player's card if it's drawn.
-    x, y = pos
-    start_x, start_y = 50, 50
-    cell_size = 50
-    # Check if the mouse click.
-    for row in range(BINGO_CARD_SIZE):
-        for col in range(BINGO_CARD_SIZE):
-            cell_x = start_x + col * cell_size
-            cell_y = start_y + row * cell_size
-            # If click the same as drawn number MARK it.
-            if cell_x <= x <= cell_x + cell_size and cell_y <= y <= cell_y + cell_size:
-                if card[row][col] in drawn and (row, col) not in marked_positions:
-                    marked_positions.append((row, col))
-                    return  # Exit after marking a single number.
-
-
-def draw_button(text, position, size=(180, 40), color=GREEN):
-    # Create a clickable button.
-    button_rect = pygame.Rect(position, size)
-    # Draw the button.
-    pygame.draw.rect(screen, color, button_rect)
-    # Putting the button text.
-    text_surf = font.render(text, True, WHITE)
-    text_rect = text_surf.get_rect(center=button_rect.center)
-    screen.blit(text_surf, text_rect)
-    return button_rect
-
-
-def check_win(marked_positions):
-    # Determine if a player has satisfied a winning condition.
-    for line in range(BINGO_CARD_SIZE):
-        # Check if all numbers in a row are marked.
-        if all((line, col) in marked_positions for col in range(BINGO_CARD_SIZE)):
-            return True
-        # Check if all numbers in a column are marked.
-        if all((row, line) in marked_positions for row in range(BINGO_CARD_SIZE)):
-            return True
-    # Check the diagonal from top-left to bottom-right.
-    if all((i, i) in marked_positions for i in range(BINGO_CARD_SIZE)):
-        return True
-    # Check the diagonal from top-right to bottom-left.
-    if all((i, BINGO_CARD_SIZE - 1 - i) in marked_positions for i in range(BINGO_CARD_SIZE)):
-        return True
-    # No win condition return False.
-    return False
+def calculate_slot(angle):
+    degrees_per_slot = 360 / NUM_SLOTS  # Calculate number of degrees per slot
+    normalized_angle = math.degrees(angle) % 360
+    slot_number = int(normalized_angle / degrees_per_slot)  # Calculate the slot number
+    return slot_number  # Return the slot number
 
 
 def main():
-    # Manage the game loop for the bingo game.
-    global NUMBERS_RANGE, player_card, ai_cards, drawn_numbers, marked_positions_player, marked_positions_ai, player, ai_players
+    # Global variables
+    global ball_spinning, ball_angle, ball_spin_speed
+    global target_slot, balance, bet_amount, last_bet_info, bet_type
+    global show_popup, popup_text, wins, losses
 
-    # Reset and start a new game.
-    NUMBERS_RANGE = list(range(1, 76))  # Numbers range
-    player_card = generate_bingo_card()  # Generate a new card for the player.
-    ai_cards = [generate_bingo_card() for _ in range(2)]  # Generate cards for the AIs.
-    drawn_numbers = []  # Track numbers that have been drawn.
-    marked_positions_player = []  # Track marks.
-    marked_positions_ai = [[] for _ in range(2)]  # Track marks on AI's cards.
+    running = True
+    while running:
+        mouse_pos = pygame.mouse.get_pos()
+        screen.fill(BLACK)  # Clear the screen
 
-    # Game Variables
+        # Back button
+        BACK = Button(image=pygame.image.load("assets/Play Rect.png"),
+                      pos=(1150, 50), text_input=f"BACK", font=button_font,
+                      base_color=BLACK, hovering_color="red")
+        BACK.changeColor(mouse_pos)
+        BACK.update(screen)
 
-    MIN_BET = 50
-    autoplay = False
-    game_over = False
-    winner = None
-    last_drawn_number = None
-    draw_button_rect = None
-    autoplay_button_rect = None
-    bet_button_rect = None
-
-    while not game_over:
+        # Event loop
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:  # Check for window close.
+            if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:  # Check for mouse clicks.
-                mouse_x, mouse_y = event.pos
-                # Track the betting.
-                if bet_button_rect and bet_button_rect.collidepoint((mouse_x, mouse_y)):
-                    if player.place_bet(MIN_BET):
-                        continue
-                # Track the number drawing.
-                elif draw_button_rect and draw_button_rect.collidepoint((mouse_x, mouse_y)):
-                    if NUMBERS_RANGE:
-                        last_drawn_number = random.choice(NUMBERS_RANGE)
-                        drawn_numbers.append(last_drawn_number)
-                        NUMBERS_RANGE.remove(last_drawn_number)
-                        auto_mark_player_board(last_drawn_number, player_card, marked_positions_player)
-                        auto_mark_ai_boards(last_drawn_number)
-                # Turn on/off autoplay.
-                elif autoplay_button_rect and autoplay_button_rect.collidepoint((mouse_x, mouse_y)):
-                    autoplay = not autoplay
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if show_popup:
+                    show_popup = False  # User dismisses the popup
+                elif BACK.checkForInput(mouse_pos): # Return button
+                    return
+                else:
+                    clicked_button = check_click(mouse_pos)
+                    if clicked_button:
+                        if "bet" in clicked_button:
+                            temp_bet_amount = clicked_button["bet"]
+                            if balance - temp_bet_amount >= 0:
+                                bet_amount += temp_bet_amount
+                                balance -= temp_bet_amount
+                                last_bet_info = f"Total Bet: ${bet_amount}"
+                            else:
+                                last_bet_info = "Insufficient balance!"
+                        elif "type" in clicked_button:
+                            bet_type = clicked_button["type"]
+                            if bet_amount > 0 and bet_type in ["red", "black", "odd", "even", "low", "high"]:
+                                ball_spinning = True
+                                ball_spin_speed = 0.2 + random.uniform(-0.01, 0.01)
+                                target_slot = random.randint(0, NUM_SLOTS - 1)
+                                last_bet_info = f"Betting ${bet_amount} on {bet_type}"
 
-        if autoplay and NUMBERS_RANGE:  # Autoplay drawing.
-            pygame.time.wait(500)
-            last_drawn_number = random.choice(NUMBERS_RANGE)
-            drawn_numbers.append(last_drawn_number)
-            NUMBERS_RANGE.remove(last_drawn_number)
-            auto_mark_player_board(last_drawn_number, player_card, marked_positions_player)
-            auto_mark_ai_boards(last_drawn_number)
+        # Game logic
+        if ball_spinning:
+            ball_angle += ball_spin_speed
+            ball_spin_speed *= 0.99
+            if ball_spin_speed < 0.05:
+                ball_spinning = False
+                final_slot = calculate_slot(ball_angle)
+                winning_color = "red" if final_slot % 2 == 0 else "black"
+                if final_slot == 0:
+                    winning_color = "green"
+                if (bet_type == winning_color or
+                        (bet_type == "odd" and final_slot % 2 != 0 and final_slot != 0) or
+                        (bet_type == "even" and final_slot % 2 == 0 and final_slot != 0) or
+                        (bet_type == "low" and 1 <= final_slot <= 18) or
+                        (bet_type == "high" and 19 <= final_slot <= 36)):
+                    balance += bet_amount * 2
+                    outcome_msg = "Win!"
+                    wins += 1
+                else:
+                    outcome_msg = "Lose!"
+                    losses += 1
+                last_bet_info = f"Landed on: {final_slot} ({winning_color}). {outcome_msg}"
+                popup_text = f"Result: {final_slot} ({winning_color})\nOutcome: {outcome_msg}\nBalance: ${balance}"
+                show_popup = True
+                bet_amount = 0
+                bet_type = None
 
-        # Check for a win everytime a number is picked.
-        if check_win(marked_positions_player):
-            player.win()
-            winner = "Player"
-            game_over = True
-        for ai_index, marks in enumerate(marked_positions_ai):
-            if check_win(marks):
-                ai_players[ai_index].win()
-                winner = f"AI {ai_index + 1}"
-                game_over = True
+        # Rendering
+        draw_wheel(0)
+        draw_ball(ball_angle)
+        display_info(balance, bet_type if bet_type else "none", bet_amount, last_bet_info, wins, losses)
+        handle_buttons(mouse_pos)
 
-        # Take care of the end game and losses.
-        if game_over:
-            if winner != "Player":
-                player.lose()
-            for i, ai in enumerate(ai_players):
-                if f"AI {i + 1}" != winner:
-                    ai.lose()
+        # Display the popup
+        if show_popup:
+            draw_popup(popup_text)
 
-        # Update the display.
-        screen.fill(BLACK)
-        draw_bingo_card(player_card, (50, 50), drawn_numbers, marked_positions_player)
-        draw_player_stats(player.balance, player.bet, player.wins, player.losses, (50, 350))
-        for ai_index, ai_card in enumerate(ai_cards):
-            draw_bingo_card(ai_card, (400 + ai_index * 300, 50), drawn_numbers, marked_positions_ai[ai_index])
-            draw_ai_stats(ai_players[ai_index], (400 + ai_index * 300, 350))
-        if last_drawn_number is not None:
-            draw_last_drawn_number(last_drawn_number)
-        draw_button_rect = draw_button("Draw Number", (SCREEN_WIDTH // 2 - 60, 550))
-        autoplay_button_rect = draw_button("Autoplay: ON" if autoplay else "Autoplay: OFF",
-                                           (SCREEN_WIDTH // 2 - 250, 550))
-        bet_button_rect = draw_button("Place Bet: $50", (SCREEN_WIDTH // 2 - 450, 550))
-
+        # Refresh the screen
         pygame.display.flip()
-
-    action = endgame_screen(winner)  # Display the end game screen.
-    if action == "replay":
-        main()  # Restart.
-    else:
-        pygame.quit()  # End the game.
+        clock.tick(60)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
