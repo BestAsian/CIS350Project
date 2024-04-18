@@ -205,9 +205,9 @@ def main():
                         betSizeMessage = True
         
         if player.getBet() == 0:
-            fiveD = Button(None, [250, 300], "$5", font, 'black', 'gray')
-            tenD = Button(None, [350, 300], "$10", font, 'black', 'gray')
-            twentyD = Button(None, [450, 300], "$20", font, 'black', 'gray')
+            fiveD = Button(None, [250, 400], "$5", font, 'black', 'gray')
+            tenD = Button(None, [350, 400], "$10", font, 'black', 'gray')
+            twentyD = Button(None, [450, 400], "$20", font, 'black', 'gray')
             #customButton = Button(None, [400, 450], "Custom Bet", font, 'black', 'gray')
 
             fiveD.update(screen)
