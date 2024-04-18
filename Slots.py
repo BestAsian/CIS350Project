@@ -57,12 +57,12 @@ class Item:
 # Item images
 items = []
 item_files = [
-    'cherryslotmachine.png',
-    '7slotmachine.png',
-    'orangeslotmachine.png',
-    'plumslotmachine.png',
-    'barslotmachine.png',
-    'lemonslotmachine.png'
+    'assets/cherryslotmachine.png',
+    'assets/7slotmachine.png',
+    'assets/orangeslotmachine.png',
+    'assets/plumslotmachine.png',
+    'assets/barslotmachine.png',
+    'assets/lemonslotmachine.png'
 ]
 
 def load_images():
@@ -81,12 +81,12 @@ def load_images():
     selected_items = random.sample(item_files, 3)  # Update selected_items with a new random selection
 
 winning_combinations = {
-    ('cherryslotmachine.png', 'cherryslotmachine.png', 'cherryslotmachine.png'): 400,  # 3 cherries (second highest)
-    ('7slotmachine.png', '7slotmachine.png', '7slotmachine.png'): 500,  # three sevens (highest)
-    ('orangeslotmachine.png', 'orangeslotmachine.png', 'orangeslotmachine.png'): 300,  # three oranges
-    ('plumslotmachine.png', 'plumslotmachine.png', 'plumslotmachine.png'): 250,  # Three plums
-    ('barslotmachine.png', 'barslotmachine.png', 'barslotmachine.png'): 200,  # three bars
-    ('lemonslotmachine.png', 'lemonslotmachine.png', 'lemonslotmachine.png'): 150   # three Lemons
+    ('assets/cherryslotmachine.png', 'assets/cherryslotmachine.png', 'assets/cherryslotmachine.png'): 400,  # 3 cherries (second highest)
+    ('assets/7slotmachine.png', 'assets/7slotmachine.png', 'assets/7slotmachine.png'): 500,  # three sevens (highest)
+    ('assets/orangeslotmachine.png', 'assets/orangeslotmachine.png', 'assets/orangeslotmachine.png'): 300,  # three oranges
+    ('assets/plumslotmachine.png', 'assets/plumslotmachine.png', 'assets/plumslotmachine.png'): 250,  # Three plums
+    ('assets/barslotmachine.png', 'assets/barslotmachine.png', 'assets/barslotmachine.png'): 200,  # three bars
+    ('assets/lemonslotmachine.png', 'assets/lemonslotmachine.png', 'assets/lemonslotmachine.png'): 150   # three Lemons
 }
 
 games_played = 0
@@ -113,7 +113,7 @@ def handle_lever_pull():
     else:
         print("You have won!")
         # If the user has played 5 times, show three sevens
-        selected_items = ['7slotmachine.png', '7slotmachine.png', '7slotmachine.png']
+        selected_items = ['assets/7slotmachine.png', 'assets/7slotmachine.png', 'assets/7slotmachine.png']
         animate_lever_pull()
         check_winning(selected_items)
         games_played = 0  # Reset games_played to 0 after winning
@@ -175,7 +175,7 @@ def check_winning(selected_items):
         print("Sorry, you didn't win.")
 
 if games_played == 5:
-    selected_items = ['7slotmachine.png', '7slotmachine.png', '7slotmachine.png']
+    selected_items = ['assets/7slotmachine.png', 'assets/7slotmachine.png', 'assets/7slotmachine.png']
 else:
     selected_items = random.sample(item_files, 3)
 
@@ -202,44 +202,42 @@ pygame.draw.line(screen, (0, 0, 0), (LEVER_X + LEVER_WIDTH // 2, LEVER_Y),
 pygame.display.flip()
 
 # Main game running
-def main():
-    running = True
-    lever_pulled = False
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if LEVER_RECT.collidepoint(event.pos):
-                    lever_pulled = True
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if lever_pulled:
-                    handle_lever_pull()
-                    lever_pulled = False
-    
-        # Randomly select 3 items
-        if lever_pulled:
-            if games_played < 5:
-                selected_items = random.sample(item_files, 3)
-                games_played += 1
-            else:
-                selected_items = ['7slotmachine.png', '7slotmachine.png', '7slotmachine.png']
-            lever_pulled = False
-    
-        # Display the 3 random items
-        screen.fill((255, 255, 255))
-        for i, item_file in enumerate(selected_items):
-            image = pygame.image.load(item_file)
-            image = pygame.transform.scale(image, (SLOT_WIDTH, SLOT_HEIGHT))
-            screen.blit(image, (SLOTS_X + (SLOT_WIDTH + SLOT_SPACING) * i, SLOTS_Y))
-    
-        # Draw lever
-        pygame.draw.rect(screen, LEVER_COLOR, LEVER_RECT)
-        pygame.draw.line(screen, (0, 0, 0), (LEVER_X + LEVER_WIDTH // 2, LEVER_Y),
-                         (LEVER_X + LEVER_WIDTH // 2, LEVER_Y + LEVER_HEIGHT), 4)
-    
-        pygame.display.flip()
-    
-    # Quit Pygame
-    pygame.quit()
-    
+running = True
+lever_pulled = False
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if LEVER_RECT.collidepoint(event.pos):
+                lever_pulled = True
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if lever_pulled:
+                handle_lever_pull()
+                lever_pulled = False
+
+    # Randomly select 3 items
+    if lever_pulled:
+        if games_played < 5:
+            selected_items = random.sample(item_files, 3)
+            games_played += 1
+        else:
+            selected_items = ['assets/7slotmachine.png', 'assets/7slotmachine.png', 'assets/7slotmachine.png']
+        lever_pulled = False
+
+    # Display the 3 random items
+    screen.fill((255, 255, 255))
+    for i, item_file in enumerate(selected_items):
+        image = pygame.image.load(item_file)
+        image = pygame.transform.scale(image, (SLOT_WIDTH, SLOT_HEIGHT))
+        screen.blit(image, (SLOTS_X + (SLOT_WIDTH + SLOT_SPACING) * i, SLOTS_Y))
+
+    # Draw lever
+    pygame.draw.rect(screen, LEVER_COLOR, LEVER_RECT)
+    pygame.draw.line(screen, (0, 0, 0), (LEVER_X + LEVER_WIDTH // 2, LEVER_Y),
+                     (LEVER_X + LEVER_WIDTH // 2, LEVER_Y + LEVER_HEIGHT), 4)
+
+    pygame.display.flip()
+
+# Quit Pygame
+pygame.quit()
