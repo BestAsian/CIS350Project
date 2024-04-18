@@ -136,11 +136,11 @@ def main():
     hitButton = Button(None, [250, 300], 'Hit', font, 'black', 'gray')
     ddButton = Button(None, [400, 300], 'Double Down', font, 'black', 'gray')
     surrenderButton = Button(None, [600, 300], 'Surrender', font, 'black', 'gray')
-    fiveD = Button(None, [250, 300], "$5", font, 'black', 'gray')
-    tenD = Button(None, [350, 300], "$10", font, 'black', 'gray')
-    twentyD = Button(None, [450, 300], "$20", font, 'black', 'gray')
+    fiveD = Button(None, [250, 400], "$5", font, 'black', 'gray')
+    tenD = Button(None, [350, 400], "$10", font, 'black', 'gray')
+    twentyD = Button(None, [450, 400], "$20", font, 'black', 'gray')
     hasBJContinueButton = Button(None, [250, 250], 'Continue', font, 'black', 'gray')
-    newRoundButton = Button(None, [400, 350], 'Begin New Round', font, black, 'gray')
+    newRoundButton = Button(None, [400, 550], 'Begin New Round', font, black, 'gray')
     while running == True:
         if newRound == True: #resets a bunch of things to prepare for a new round
             player.resetHand()
