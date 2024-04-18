@@ -72,6 +72,7 @@ def main():
 
     run = True
     while run:
+        # LOADS TEXT AND BUTTONS
         WIN.blit(BG, (0, 0))
         balance_text = FONT.render(f"Balance: {balance}", True, BLACK)
         WIN.blit(balance_text, (10, 5))
@@ -136,6 +137,7 @@ def main():
             button.changeColor([mouse_x, mouse_y])
             button.update(WIN)
 
+        # EVENT HANDLER
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
