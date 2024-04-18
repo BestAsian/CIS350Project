@@ -280,7 +280,7 @@ def main():
                 row = get_next_open_row(board, col)
                 drop_piece(board, row, col, AI_PIECE)
                 if winning_move(board, AI_PIECE):
-                    label = my_font.render("[AI]PLAYER 2 WINS!", 1, YELLOW)
+                    label = my_font.render("PLAYER 2 WINS!", 1, YELLOW)
                     screen.blit(label, (40, 10))
                     not_over = False
                     game_over = False
