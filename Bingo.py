@@ -379,7 +379,7 @@ def main():
     if action == "replay":
         main()  # Restart.
     else:
-        pygame.quit()  # End the game.
+        return  # End the game.
 
 
 if __name__ == '__main__':
