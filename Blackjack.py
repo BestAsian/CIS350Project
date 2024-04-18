@@ -1,7 +1,6 @@
-
 import random
 import pygame
-from Button import Button
+from button import Button
 import sys
 
 pygame.init()
@@ -10,6 +9,8 @@ font = pygame.font.SysFont(None, 30)
 black = (0, 0, 0)
 white = (255, 255, 255)
 gray = (105, 105, 105)
+
+
 class Card:
     def __init__(self, val, suit, path):
         self.val = val
@@ -18,14 +19,15 @@ class Card:
 
     def getVal(self):
         return self.val
-    
+
     def getSuit(self):
         return self.suit
-    
+
     def getPath(self):
-        return f"assets\Cards\{self.path}.png"
-    
-#Creates a deck
+        return f"assets/Cards/{self.path}.png"
+
+
+# Creates a deck
 def createDeck():
     deck = []
     suits = ['spades', 'hearts', 'clubs', 'diamonds']
@@ -41,7 +43,6 @@ def createDeck():
     return deck
 
 
-
 class Player:
 
     def __init__(self, funds):
@@ -51,16 +52,16 @@ class Player:
 
     def addCard(self, card):
         self.hand.append(card)
-    
+
     def setBet(self, bet):
         self.bet = bet
-        
+
     def getBet(self):
         return self.bet
-    
+
     def getHand(self):
         return self.hand
-    
+
     def resetHand(self):
         self.hand = []
 
@@ -73,15 +74,17 @@ class Player:
     def getFunds(self):
         return self.funds
 
+
 def validBet(bet, player):
     if bet > player.funds:
         return False
     return True
-    
+
+
 class Dealer:
     def __init__(self):
         self.hand = []
-    
+
     def addCard(self, card):
         self.hand.append(card)
 
@@ -90,9 +93,10 @@ class Dealer:
 
     def resetHand(self):
         self.hand = []
-        
+
+
 def countHand(hand):
-    #finds the total value of the hand
+    # finds the total value of the hand
     total = 0
     aceCount = 0
     for card in hand:
@@ -110,6 +114,7 @@ def countHand(hand):
             total += 11
     return total
 
+
 def hasBlackjack(hand):
     has10 = False
     hasAce = False
@@ -124,6 +129,7 @@ def hasBlackjack(hand):
         return True
     else:
         return False
+
 
 def main():
     running = True
@@ -142,7 +148,7 @@ def main():
     hasBJContinueButton = Button(None, [250, 250], 'Continue', font, 'black', 'gray')
     newRoundButton = Button(None, [400, 550], 'Begin New Round', font, black, 'gray')
     while running == True:
-        if newRound == True: #resets a bunch of things to prepare for a new round
+        if newRound == True:  # resets a bunch of things to prepare for a new round
             player.resetHand()
             dealer.resetHand()
             deck = createDeck()
@@ -164,7 +170,7 @@ def main():
 
         dealerCard1 = pygame.image.load(dealer.getHand()[0].getPath())
         dealerCard2 = pygame.image.load(dealer.getHand()[1].getPath())
-        faceDownCard = pygame.image.load('assets\Cards\\back_red_basic_white.png')
+        faceDownCard = pygame.image.load('assets/Cards/back_red_basic_white.png')
 
         balance = font.render(f"Current Balance: {player.getFunds()}", True, black)
         screen.blit(balance, (400, 50))
@@ -176,9 +182,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                pygame.quit()
-                sys.exit()
-                break
+                return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if newRoundButton.checkForInput(mousePos):
                     newRound = True
@@ -189,31 +193,31 @@ def main():
                         player.updateFunds(-5)
                     else:
                         betSizeMessage = True
-                if tenD.checkForInput(mousePos):
+                elif tenD.checkForInput(mousePos):
                     if validBet(10, player):
                         player.setBet(10)
                         betSizeMessage = False
                         player.updateFunds(-10)
                     else:
                         betSizeMessage = True
-                if twentyD.checkForInput(mousePos):
+                elif twentyD.checkForInput(mousePos):
                     if validBet(20, player):
                         player.setBet(20)
                         betSizeMessage = False
                         player.updateFunds(-20)
                     else:
                         betSizeMessage = True
-        
+
         if player.getBet() == 0:
             fiveD = Button(None, [250, 400], "$5", font, 'black', 'gray')
             tenD = Button(None, [350, 400], "$10", font, 'black', 'gray')
             twentyD = Button(None, [450, 400], "$20", font, 'black', 'gray')
-            #customButton = Button(None, [400, 450], "Custom Bet", font, 'black', 'gray')
+            # customButton = Button(None, [400, 450], "Custom Bet", font, 'black', 'gray')
 
             fiveD.update(screen)
             tenD.update(screen)
             twentyD.update(screen)
-            #customButton.update(screen)
+            # customButton.update(screen)
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -254,7 +258,8 @@ def main():
             screen.blit(blackjackMessage, (0, 200))
             screen.blit(dealerCard2, (100, 400))
             if hasBlackjack(dealer.getHand()):
-                dealerBlackjackMessage = font.render('The dealer also got a blackjack. Your bet will be refunded', True, black)
+                dealerBlackjackMessage = font.render('The dealer also got a blackjack. Your bet will be refunded', True,
+                                                     black)
                 screen.blit(dealerBlackjackMessage, (50, 200))
             hasBJContinueButton = Button(None, [250, 250], 'Continue', 'black')
             hasBJContinueButton.update(screen)
@@ -370,15 +375,15 @@ def main():
             x = 0
             for card in player.getHand():
                 if x > 1:
-                    screen.blit(pygame.image.load(card.getPath()), (100 * (x-1) + 450, 400))
+                    screen.blit(pygame.image.load(card.getPath()), (100 * (x - 1) + 450, 400))
                     pygame.display.update()
                 x += 1
             continue
-        
+
         x = 0
         for card in player.getHand():
             if x > 1:
-                screen.blit(pygame.image.load(card.getPath()), (100 * (x-1) + 450, 400))
+                screen.blit(pygame.image.load(card.getPath()), (100 * (x - 1) + 450, 400))
                 pygame.display.update()
             x += 1
 
@@ -389,7 +394,7 @@ def main():
         x = 0
         for card in dealer.getHand():
             if x > 1:
-                screen.blit(pygame.image.load(card.getPath()), (100 * (x-1) + 450, 100))
+                screen.blit(pygame.image.load(card.getPath()), (100 * (x - 1) + 450, 100))
                 pygame.display.update()
             x += 1
 
@@ -466,4 +471,9 @@ def main():
                         player.updateFunds(-20)
                     else:
                         betSizeMessage = True
-        clock.tick(60)
+        clock.tick(10)
+
+
+
+if __name__ == "__main__":
+    main()
