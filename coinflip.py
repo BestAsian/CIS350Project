@@ -120,7 +120,10 @@ def main():
                 elif 700 <= mouse_x <= 850 and 500 <= mouse_y <= 570:
                     if current_bet > 0:
                         if not is_valid_bet(current_bet, balance):
-                            print("Insufficient balance. Please enter a lower bet amount.")
+                            invalidbet_text = FONT.render(f"{current_bet} is greater than your balance.", True, (255, 0, 0))
+                            WIN.blit(invalidbet_text, (300, 500))
+                            pygame.display.update()
+                            time.sleep(2)
                         else:
                             outcome = flip_coin()
                             display_result(outcome)
@@ -162,7 +165,7 @@ def main():
         WIN.blit(back_text, (1110, 60))
 
         pygame.display.update()
-        mainClock.tick(60)
+        mainClock.tick(10)
 
 
 
