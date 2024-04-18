@@ -1,6 +1,6 @@
 """
-This programs run Roulette game using pygame with features such as betting on colors, even/odd numbers,
-lower and upper bounds, respectively.
+This programs run Roulette game using pygame with features such as betting on colors, even/odd numbers, 
+lower and upper bounds, respectively. 
 Tri Tran
 04/18/2024
 Version: 3.11
@@ -15,7 +15,7 @@ import sys
 pygame.init()
 
 # Display's Settings
-SCREEN_WIDTH, SCREEN_HEIGHT = 1200, 950
+SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Roulette Game")
 
@@ -24,8 +24,8 @@ clock = pygame.time.Clock()
 
 # Colors
 WHITE, BLACK, RED, GREEN, LIGHT_GREY, DARK_GREY = ((255, 255, 255), (0, 0, 0),
-                                                    (255, 0, 0), (255, 255, 0),
-                                                    (200, 200, 200), (50, 50, 50))
+                                                   (255, 0, 0), (255, 255, 0),
+                                                   (200, 200, 200), (50, 50, 50))
 
 # Wheel
 WHEEL_RADIUS, BALL_RADIUS, NUM_SLOTS = 300, 12, 37
@@ -39,21 +39,19 @@ popup_font = pygame.font.SysFont("Arial", 36)
 
 # All Bet's button
 bet_buttons = [
-    {"rect": pygame.Rect(50, 770, 120, 60), "text": "Bet $5", "bet": 5},
-    {"rect": pygame.Rect(200, 770, 120, 60), "text": "Bet $10", "bet": 10},
-    {"rect": pygame.Rect(350, 770, 120, 60), "text": "Bet $100", "bet": 100},
+    {"rect": pygame.Rect(30, 300, 120, 60), "text": "Bet $5", "bet": 5},
+    {"rect": pygame.Rect(30, 380, 120, 60), "text": "Bet $10", "bet": 10},
+    {"rect": pygame.Rect(30, 460, 120, 60), "text": "Bet $100", "bet": 100},
 ]
-
 
 type_buttons = [
-    {"rect": pygame.Rect(50, 850, 120, 60), "text": "Red", "type": "red"},
-    {"rect": pygame.Rect(200, 850, 120, 60), "text": "Black", "type": "black"},
-    {"rect": pygame.Rect(350, 850, 120, 60), "text": "Odd", "type": "odd"},
-    {"rect": pygame.Rect(500, 850, 120, 60), "text": "Even", "type": "even"},
-    {"rect": pygame.Rect(650, 850, 120, 60), "text": "Low (1-18)", "type": "low"},
-    {"rect": pygame.Rect(800, 850, 120, 60), "text": "High (19-36)", "type": "high"},
+    {"rect": pygame.Rect(1000, 300, 120, 60), "text": "Red", "type": "red"},
+    {"rect": pygame.Rect(1150, 300, 120, 60), "text": "Black", "type": "black"},
+    {"rect": pygame.Rect(1000, 380, 120, 60), "text": "Odd", "type": "odd"},
+    {"rect": pygame.Rect(1150, 380, 120, 60), "text": "Even", "type": "even"},
+    {"rect": pygame.Rect(1000, 460, 120, 60), "text": "Low (1-18)", "type": "low"},
+    {"rect": pygame.Rect(1150, 460, 120, 60), "text": "High (19-36)", "type": "high"},
 ]
-
 
 # Roulette's global variables
 ball_spinning, ball_angle, ball_spin_speed = False, 0, 0
@@ -93,6 +91,7 @@ def handle_number_input(events):
                     return False  # Invalid
 
     return False  # No number entered
+
 
 def draw_wheel(angle):
     # Font for the wheel's number
@@ -134,6 +133,7 @@ def draw_wheel(angle):
         text_rect = text_surface.get_rect(center=(text_x, text_y))
         screen.blit(text_surface, text_rect)
 
+
 def draw_ball(angle):
     # Ball
     x = SCREEN_WIDTH // 2 + math.cos(angle) * (WHEEL_RADIUS - BALL_RADIUS * 3)
@@ -141,6 +141,7 @@ def draw_ball(angle):
 
     # Draw the ball onto the wheel
     pygame.draw.circle(screen, WHITE, (int(x), int(y)), BALL_RADIUS)
+
 
 def draw_popup(text):
     # Screen pop-up
@@ -157,7 +158,8 @@ def draw_popup(text):
         text_rect = text_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50 + i * 50))
         screen.blit(text_surface, text_rect)
 
-def display_info( balance, bet_type, bet_amount, last_bet_info, wins, losses):
+
+def display_info(balance, bet_type, bet_amount, last_bet_info, wins, losses):
     # Font setting
     font = pygame.font.SysFont(None, 36)
 
@@ -177,6 +179,7 @@ def display_info( balance, bet_type, bet_amount, last_bet_info, wins, losses):
     win_lose_text = font.render(f"Wins: {wins} Losses: {losses}", True, WHITE)
     screen.blit(win_lose_text, (100, 100))
 
+
 def handle_buttons(mouse_pos):
     all_buttons = type_buttons + bet_buttons  # Combine type and bet buttons
     for button in all_buttons:  # GO through all buttons
@@ -187,6 +190,7 @@ def handle_buttons(mouse_pos):
         text_rect = text_surf.get_rect(center=button["rect"].center)
         screen.blit(text_surf, text_rect)
 
+
 def check_click(mouse_pos):
     all_buttons = type_buttons + bet_buttons  # Combine type and bet buttons
     for button in all_buttons:  # Go through all buttons
@@ -195,18 +199,19 @@ def check_click(mouse_pos):
             return button  # Return the button clicked
     return None  # Nothing was clicked
 
+
 def calculate_slot(angle):
     degrees_per_slot = 360 / NUM_SLOTS  # Calculate number of degrees per slot
     normalized_angle = math.degrees(angle) % 360
     slot_number = int(normalized_angle / degrees_per_slot)  # Calculate the slot number
     return slot_number  # Return the slot number
 
+
 def main():
     # Global variables
     global ball_spinning, ball_angle, ball_spin_speed
     global target_slot, balance, bet_amount, last_bet_info, bet_type
     global show_popup, popup_text, wins, losses
-
 
     running = True
     while running:
@@ -280,6 +285,7 @@ def main():
         # Refresh the screen
         pygame.display.flip()
         clock.tick(60)
+
 
 if __name__ == "__main__":
     main()
