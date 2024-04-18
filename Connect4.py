@@ -236,6 +236,10 @@ def main():
             if event.type == pygame.QUIT:
                 sys.exit()
 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if BACK.checkForInput([mouse_x, mouse_y]):
+                    return
+
             if event.type == pygame.MOUSEMOTION and not_over:
                 pygame.draw.rect(screen, BLACK, (0, 0, 700, SQUARESIZE))
                 xpos = (pygame.mouse.get_pos()[0]) % 655
@@ -244,9 +248,7 @@ def main():
 
             if event.type == pygame.MOUSEBUTTONDOWN and not_over:
                 pygame.draw.rect(screen, BLACK, (0, 0, 700, SQUARESIZE))
-                if BACK.checkForInput([mouse_x, mouse_y]):
-                    return
-                elif turn == PLAYER_TURN:
+                if turn == PLAYER_TURN:
 
                     xpos = event.pos[0]
                     col = int(math.floor(xpos / SQUARESIZE))
