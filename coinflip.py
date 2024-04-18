@@ -8,6 +8,9 @@ pygame.init()
 
 # Set up display
 BG = pygame.image.load("assets/Background.png")
+HEADS = pygame.image.load("assets/HEADS.png")
+TAILS = pygame.image.load("assets/TAILS.png")
+
 WIDTH, HEIGHT = 1280, 720
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Coin Flip Game")
@@ -40,7 +43,12 @@ def update_balance(outcome, bet_amount, balance, win):
 # Function to display the result of the coin flip
 def display_result(outcome):
     result_text = FONT.render(f"The result is: {outcome}", True, BLACK)
-    WIN.blit(result_text, (WIDTH // 2 - result_text.get_width() // 2, HEIGHT // 2 - 50))
+    WIN.blit(result_text, (WIDTH // 2 - result_text.get_width() // 2, HEIGHT // 2 + 50))
+    if outcome == "HEADS":
+        WIN.blit(HEADS, (500, 50))
+    elif outcome == "TAILS":
+        WIN.blit(TAILS, (500, 50))
+    pygame.time.wait(20)
     pygame.display.update()
 
 
@@ -165,7 +173,7 @@ def main():
         WIN.blit(back_text, (1110, 60))
 
         pygame.display.update()
-        mainClock.tick(10)
+        mainClock.tick(4)
 
 
 
