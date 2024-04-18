@@ -1,3 +1,10 @@
+"""
+This programs run Bingo using pygame with features such as betting, autoplay,
+manual plays, versus AI, respectively.
+Tri Tran
+04/18/2024
+Version: 3.11
+"""
 import pygame
 import random
 import sys
@@ -224,7 +231,6 @@ def auto_mark_ai_boards(drawn_number):
                 if ai_card[row][col] == drawn_number:
                     marked_positions_ai[ai_index].append((row, col))
 
-
 def draw_last_drawn_number(number):
     # Display the last number drawn in the game.
     if number:  # Make sure the number is valid.
@@ -373,7 +379,7 @@ def main():
     if action == "replay":
         main()  # Restart.
     else:
-        return  # End the game.
+        pygame.quit()  # End the game.
 
 
 if __name__ == '__main__':
