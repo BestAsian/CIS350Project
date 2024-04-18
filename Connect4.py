@@ -8,25 +8,30 @@ from button import Button
 
 
 def create_board():
+    # Creates board array
     board = np.zeros((ROWS, COLS))
     return board
 
 
 def drop_piece(board, row, col, piece):
+    # Updates the array with the piece type
     board[row][col] = piece
 
 
 def is_valid_location(board, col):
+    # Returns if that column is valid.
     return board[0][col] == 0
 
 
 def get_next_open_row(board, col):
+    # Finds the next open row.
     for r in range(ROWS - 1, -1, -1):
         if board[r][col] == 0:
             return r
 
 
 def winning_move(board, piece):
+    # Checks for all winning moves.
     for c in range(COLS - 3):
         for r in range(ROWS):
             if board[r][c] == piece and board[r][c + 1] == piece and board[r][c + 2] == piece and board[r][
@@ -53,6 +58,7 @@ def winning_move(board, piece):
 
 
 def draw_board(board):
+    # Draws the board based on what is in the board array.
     for c in range(COLS):
         for r in range(ROWS):
             pygame.draw.rect(screen, BLUE, (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
@@ -73,6 +79,7 @@ def draw_board(board):
 
 
 def evaluate_window(window, piece):
+    # Checks all moves and returns the "score" of the move
     opponent_piece = PLAYER_PIECE
 
     if piece == PLAYER_PIECE:
@@ -92,6 +99,7 @@ def evaluate_window(window, piece):
 
 
 def score_position(board, piece):
+    # Supporting Calculation of score
     score = 0
 
     center_array = [int(i) for i in list(board[:, COLS // 2])]
@@ -124,10 +132,12 @@ def score_position(board, piece):
 
 
 def is_terminal_node(board):
+    # Whether or not the move would result in a win for player or AI.
     return winning_move(board, PLAYER_PIECE) or winning_move(board, AI_PIECE) or len(get_valid_locations(board)) == 0
 
 
 def minimax(board, depth, alpha, beta, maximizing_player):
+    # MINIMAX algorithm
     valid_locations = get_valid_locations(board)
 
     is_terminal = is_terminal_node(board)
@@ -179,6 +189,7 @@ def minimax(board, depth, alpha, beta, maximizing_player):
 
 
 def get_valid_locations(board):
+    # Gets all valid moves
     valid_locations = []
 
     for column in range(COLS):
@@ -210,6 +221,7 @@ circle_radius = int(SQUARESIZE / 2 - 5)
 
 
 def main():
+    # Game initialization
     board = create_board()
     BG = pygame.image.load("assets/Background.png")
     game_over = False
@@ -224,6 +236,7 @@ def main():
 
 
     while not game_over:
+        # Main game loop
         mouse_x, mouse_y = pygame.mouse.get_pos()
         BACK = Button(image=pygame.image.load("assets/Play Rect.png"),
                       pos=(1000, 500), text_input=f"BACK", font=my_font,
@@ -232,6 +245,7 @@ def main():
         BACK.update(screen)
 
         for event in pygame.event.get():
+            # Event handler
 
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -257,6 +271,7 @@ def main():
                         row = get_next_open_row(board, col)
                         drop_piece(board, row, col, PLAYER_PIECE)
                         if winning_move(board, PLAYER_PIECE):
+                            # Handles player win
                             label = my_font.render("PLAYER 1 WINS!", 1, RED)
                             screen.blit(label, (40, 10))
                             money_won = random.randint(0,100)
@@ -274,6 +289,7 @@ def main():
             pygame.display.update()
 
         if turn == AI_TURN and not game_over and not_over:
+            # AI turn handler
 
             col, minimax_score = minimax(board, 5, -math.inf, math.inf, True)
 
@@ -282,6 +298,7 @@ def main():
                 row = get_next_open_row(board, col)
                 drop_piece(board, row, col, AI_PIECE)
                 if winning_move(board, AI_PIECE):
+                    # Handles AI win
                     label = my_font.render("PLAYER 2 WINS!", 1, YELLOW)
                     screen.blit(label, (40, 10))
                     not_over = False
