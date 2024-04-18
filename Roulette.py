@@ -1,6 +1,6 @@
 """
-This programs run Roulette game using pygame with features such as betting on colors, even/odd numbers, 
-lower and upper bounds, respectively. 
+This programs run Roulette game using pygame with features such as betting on colors, even/odd numbers,
+lower and upper bounds, respectively.
 Tri Tran
 04/18/2024
 Version: 3.11
@@ -39,19 +39,21 @@ popup_font = pygame.font.SysFont("Arial", 36)
 
 # All Bet's button
 bet_buttons = [
-    {"rect": pygame.Rect(50, 850, 120, 60), "text": "Bet $5", "bet": 5},
-    {"rect": pygame.Rect(200, 850, 120, 60), "text": "Bet $10", "bet": 10},
-    {"rect": pygame.Rect(350, 850, 120, 60), "text": "Bet $100", "bet": 100},
+    {"rect": pygame.Rect(50, 770, 120, 60), "text": "Bet $5", "bet": 5},
+    {"rect": pygame.Rect(200, 770, 120, 60), "text": "Bet $10", "bet": 10},
+    {"rect": pygame.Rect(350, 770, 120, 60), "text": "Bet $100", "bet": 100},
 ]
 
+
 type_buttons = [
-    {"rect": pygame.Rect(50, 770, 120, 60), "text": "Red", "type": "red"},
-    {"rect": pygame.Rect(200, 770, 120, 60), "text": "Black", "type": "black"},
-    {"rect": pygame.Rect(350, 770, 120, 60), "text": "Odd", "type": "odd"},
-    {"rect": pygame.Rect(500, 770, 120, 60), "text": "Even", "type": "even"},
-    {"rect": pygame.Rect(650, 770, 120, 60), "text": "Low (1-18)", "type": "low"},
-    {"rect": pygame.Rect(800, 770, 120, 60), "text": "High (19-36)", "type": "high"},
+    {"rect": pygame.Rect(50, 850, 120, 60), "text": "Red", "type": "red"},
+    {"rect": pygame.Rect(200, 850, 120, 60), "text": "Black", "type": "black"},
+    {"rect": pygame.Rect(350, 850, 120, 60), "text": "Odd", "type": "odd"},
+    {"rect": pygame.Rect(500, 850, 120, 60), "text": "Even", "type": "even"},
+    {"rect": pygame.Rect(650, 850, 120, 60), "text": "Low (1-18)", "type": "low"},
+    {"rect": pygame.Rect(800, 850, 120, 60), "text": "High (19-36)", "type": "high"},
 ]
+
 
 # Roulette's global variables
 ball_spinning, ball_angle, ball_spin_speed = False, 0, 0
