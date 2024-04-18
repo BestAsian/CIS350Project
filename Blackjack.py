@@ -1,7 +1,7 @@
 
 import random
 import pygame
-from button2 import Button
+from Button import Button
 import sys
 
 pygame.init()
@@ -23,7 +23,7 @@ class Card:
         return self.suit
     
     def getPath(self):
-        return f"Cards\{self.path}.png"
+        return f"assets\Cards\{self.path}.png"
     
 #Creates a deck
 def createDeck():
@@ -92,6 +92,7 @@ class Dealer:
         self.hand = []
         
 def countHand(hand):
+    #finds the total value of the hand
     total = 0
     aceCount = 0
     for card in hand:
@@ -130,8 +131,18 @@ def main():
     dealer = Dealer()
     player = Player(1000)
     newRound = True
+    clock = pygame.time.Clock()
+    standButton = Button(None, [100, 300], 'Stand', font, 'black', 'gray')
+    hitButton = Button(None, [250, 300], 'Hit', font, 'black', 'gray')
+    ddButton = Button(None, [400, 300], 'Double Down', font, 'black', 'gray')
+    surrenderButton = Button(None, [600, 300], 'Surrender', font, 'black', 'gray')
+    fiveD = Button(None, [250, 300], "$5", font, 'black', 'gray')
+    tenD = Button(None, [350, 300], "$10", font, 'black', 'gray')
+    twentyD = Button(None, [450, 300], "$20", font, 'black', 'gray')
+    hasBJContinueButton = Button(None, [250, 250], 'Continue', font, 'black', 'gray')
+    newRoundButton = Button(None, [400, 350], 'Begin New Round', font, black, 'gray')
     while running == True:
-        if newRound == True:
+        if newRound == True: #resets a bunch of things to prepare for a new round
             player.resetHand()
             dealer.resetHand()
             deck = createDeck()
@@ -153,7 +164,7 @@ def main():
 
         dealerCard1 = pygame.image.load(dealer.getHand()[0].getPath())
         dealerCard2 = pygame.image.load(dealer.getHand()[1].getPath())
-        faceDownCard = pygame.image.load('Cards\\back_red_basic_white.png')
+        faceDownCard = pygame.image.load('assets\Cards\\back_red_basic_white.png')
 
         balance = font.render(f"Current Balance: {player.getFunds()}", True, black)
         screen.blit(balance, (400, 50))
@@ -168,6 +179,30 @@ def main():
                 pygame.quit()
                 sys.exit()
                 break
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if newRoundButton.checkForInput(mousePos):
+                    newRound = True
+                if fiveD.checkForInput(mousePos):
+                    if validBet(5, player):
+                        player.setBet(5)
+                        betSizeMessage = False
+                        player.updateFunds(-5)
+                    else:
+                        betSizeMessage = True
+                if tenD.checkForInput(mousePos):
+                    if validBet(10, player):
+                        player.setBet(10)
+                        betSizeMessage = False
+                        player.updateFunds(-10)
+                    else:
+                        betSizeMessage = True
+                if twentyD.checkForInput(mousePos):
+                    if validBet(20, player):
+                        player.setBet(20)
+                        betSizeMessage = False
+                        player.updateFunds(-20)
+                    else:
+                        betSizeMessage = True
         
         if player.getBet() == 0:
             fiveD = Button(None, [250, 300], "$5", font, 'black', 'gray')
@@ -183,6 +218,8 @@ def main():
 
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    if newRoundButton.checkForInput(mousePos):
+                        newRound = True
                     if fiveD.checkForInput(mousePos):
                         if validBet(5, player):
                             player.setBet(5)
@@ -222,15 +259,52 @@ def main():
             hasBJContinueButton = Button(None, [250, 250], 'Continue', 'black')
             hasBJContinueButton.update(screen)
             for event in pygame.event.get():
-                if hasBJContinueButton.checkForInput(mousePos):
-                    if hasBlackjack(dealer.getHand()):
-                        player.updateFunds(player.getBet())
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if standButton.checkForInput(mousePos):
+                        readyToJudge = True
+                    if surrenderButton.checkForInput(mousePos):
+                        player.updateFunds(0.5 * player.getBet())
                         player.setBet(0)
                         newRound = True
-                    else:
-                        player.updateFunds(1.5 * player.getBet())
-                        player.setBet(0)
+                    if hitButton.checkForInput(mousePos):
+                        player.addCard(deck.pop())
+                    if ddButton.checkForInput(mousePos):
+                        player.setBet(2 * player.getBet())
+                        player.addCard(deck.pop())
+                        player.updateFunds(-1 * player.getBet())
+                        readyToJudge = True
+                    if hasBJContinueButton.checkForInput(mousePos):
+                        if hasBlackjack(dealer.getHand()):
+                            player.updateFunds(player.getBet())
+                            player.setBet(0)
+                            newRound = True
+                        else:
+                            player.updateFunds(1.5 * player.getBet())
+                            player.setBet(0)
+                            newRound = True
+                    if newRoundButton.checkForInput(mousePos):
                         newRound = True
+                    if fiveD.checkForInput(mousePos):
+                        if validBet(5, player):
+                            player.setBet(5)
+                            betSizeMessage = False
+                            player.updateFunds(-5)
+                        else:
+                            betSizeMessage = True
+                    if tenD.checkForInput(mousePos):
+                        if validBet(10, player):
+                            player.setBet(10)
+                            betSizeMessage = False
+                            player.updateFunds(-10)
+                        else:
+                            betSizeMessage = True
+                    if twentyD.checkForInput(mousePos):
+                        if validBet(20, player):
+                            player.setBet(20)
+                            betSizeMessage = False
+                            player.updateFunds(-20)
+                        else:
+                            betSizeMessage = True
             continue
 
         if readyToJudge == False:
@@ -260,6 +334,38 @@ def main():
                         player.addCard(deck.pop())
                         player.updateFunds(-1 * player.getBet())
                         readyToJudge = True
+                    if hasBJContinueButton.checkForInput(mousePos):
+                        if hasBlackjack(dealer.getHand()):
+                            player.updateFunds(player.getBet())
+                            player.setBet(0)
+                            newRound = True
+                        else:
+                            player.updateFunds(1.5 * player.getBet())
+                            player.setBet(0)
+                            newRound = True
+                    if newRoundButton.checkForInput(mousePos):
+                        newRound = True
+                    if fiveD.checkForInput(mousePos):
+                        if validBet(5, player):
+                            player.setBet(5)
+                            betSizeMessage = False
+                            player.updateFunds(-5)
+                        else:
+                            betSizeMessage = True
+                    if tenD.checkForInput(mousePos):
+                        if validBet(10, player):
+                            player.setBet(10)
+                            betSizeMessage = False
+                            player.updateFunds(-10)
+                        else:
+                            betSizeMessage = True
+                    if twentyD.checkForInput(mousePos):
+                        if validBet(20, player):
+                            player.setBet(20)
+                            betSizeMessage = False
+                            player.updateFunds(-20)
+                        else:
+                            betSizeMessage = True
 
             x = 0
             for card in player.getHand():
@@ -315,5 +421,49 @@ def main():
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if standButton.checkForInput(mousePos):
+                    readyToJudge = True
+                if surrenderButton.checkForInput(mousePos):
+                    player.updateFunds(0.5 * player.getBet())
+                    player.setBet(0)
+                    newRound = True
+                if hitButton.checkForInput(mousePos):
+                    player.addCard(deck.pop())
+                if ddButton.checkForInput(mousePos):
+                    player.setBet(2 * player.getBet())
+                    player.addCard(deck.pop())
+                    player.updateFunds(-1 * player.getBet())
+                    readyToJudge = True
+                if hasBJContinueButton.checkForInput(mousePos):
+                    if hasBlackjack(dealer.getHand()):
+                        player.updateFunds(player.getBet())
+                        player.setBet(0)
+                        newRound = True
+                    else:
+                        player.updateFunds(1.5 * player.getBet())
+                        player.setBet(0)
+                        newRound = True
                 if newRoundButton.checkForInput(mousePos):
                     newRound = True
+                if fiveD.checkForInput(mousePos):
+                    if validBet(5, player):
+                        player.setBet(5)
+                        betSizeMessage = False
+                        player.updateFunds(-5)
+                    else:
+                        betSizeMessage = True
+                if tenD.checkForInput(mousePos):
+                    if validBet(10, player):
+                        player.setBet(10)
+                        betSizeMessage = False
+                        player.updateFunds(-10)
+                    else:
+                        betSizeMessage = True
+                if twentyD.checkForInput(mousePos):
+                    if validBet(20, player):
+                        player.setBet(20)
+                        betSizeMessage = False
+                        player.updateFunds(-20)
+                    else:
+                        betSizeMessage = True
+        clock.tick(60)
