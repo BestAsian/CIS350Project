@@ -542,8 +542,10 @@ class AI(Player):
                             possibleCombos.append(comCards)
 
                 for combo in possibleCombos:
-                    print(f"length of combos {len(possibleCombos)}")
-                    print(f"Reached checkpoint b for {len(games)}th time")
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
                     thinkMessage = font.render("Please wait while the computer think <3 (he's doing his best)", True, black)
                     screen.blit(thinkMessage, (200, 600))
                     pygame.display.update()
