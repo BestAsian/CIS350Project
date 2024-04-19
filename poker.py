@@ -142,6 +142,7 @@ class Player:
                 screen.blit(inputPrompt, (600, 700))
                 currentInput = font.render(userText, True, black)
                 screen.blit(currentInput, (600, 750))
+                pygame.display.update()
 
         return newBet
 
