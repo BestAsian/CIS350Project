@@ -123,7 +123,7 @@ class Player:
                     insufficientFunds = False
                     if event.key == pygame.K_BACKSPACE:
                         userText = userText[0:-1]
-                    if event.key == pygame.K_KP_ENTER:
+                    if event.key == pygame.K_RETURN:
                         inputInt = int(userText[1:])
                         if inputInt <= self.funds:
                             userInput = False
