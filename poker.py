@@ -136,7 +136,6 @@ class Player:
                             userInput = False
                     else:
                         userText += event.unicode
-                        userInput = False
             if userInput:
                 inputPrompt = font.render("Please input the amount you would like to input in using only digits. Press Enter to place bet.", True, black)
                 screen.blit(inputPrompt, (600, 700))
